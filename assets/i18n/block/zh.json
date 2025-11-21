@@ -1,3 +1,4 @@
 {
-  "panel.node": "面板节点"
+  "panel.node": "面板节点",
+  "panel.node.hover": "面板节点浮窗, 计数: %d"
 }

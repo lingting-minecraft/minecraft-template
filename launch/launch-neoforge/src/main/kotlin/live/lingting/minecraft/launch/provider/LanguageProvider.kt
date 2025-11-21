@@ -9,8 +9,6 @@ import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.i18n.I18nLocale
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.data.PackOutput
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 import net.neoforged.neoforge.data.event.GatherDataEvent
@@ -27,11 +25,6 @@ abstract class LanguageProvider(
 ) : net.neoforged.neoforge.common.data.LanguageProvider(output, modId, locale) {
 
     companion object {
-
-        @JvmStatic
-        fun I18nLocale.translatable(): MutableComponent {
-            return Component.translatable(key)
-        }
 
         fun register(e: GatherDataEvent, items: List<DeferredItem<Item>>, blocks: List<DeferredBlock<Block>>) {
             // {locale: {key:value}}
@@ -93,18 +86,12 @@ abstract class LanguageProvider(
 
         private fun fillWorld(prefix: String, map: MutableMap<String, MutableMap<String, String>>, list: List<IWorld>) {
             map.values.forEach { m ->
-                list.forEach {
-                    val key = "$prefix.$modId.${it.id}"
-                    val descKey = "$key.desc"
+                list.forEach { i ->
+                    val key = "$prefix.$modId.${i.id}"
+                    val desc = i.i18nDesc?.key?.let { m[it] }
 
-                    val name = m[it.i18nNameKey()]
-                    val desc = m[it.i18nDescKey()]
-
-                    if (!name.isNullOrBlank()) {
-                        m[key] = name
-                    }
                     if (!desc.isNullOrBlank()) {
-                        m[descKey] = desc
+                        m[key] = desc
                     }
                 }
 

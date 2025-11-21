@@ -13,7 +13,6 @@ import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
 import live.lingting.minecraft.launch.listener.NeoForgeLeftClickListener
 import live.lingting.minecraft.launch.provider.LanguageProvider
-import live.lingting.minecraft.launch.provider.LanguageProvider.Companion.translatable
 import live.lingting.minecraft.launch.provider.LootProvider
 import live.lingting.minecraft.launch.provider.ModRecipeProvider
 import live.lingting.minecraft.launch.provider.ModelProvider

@@ -1,3 +1,4 @@
 {
-  "panel": "面板"
+  "panel": "面板",
+  "panel.hover": "面板浮窗, 数量: %d"
 }

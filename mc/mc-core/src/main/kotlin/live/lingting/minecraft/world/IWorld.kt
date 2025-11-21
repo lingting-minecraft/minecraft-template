@@ -5,6 +5,7 @@ import live.lingting.framework.util.FieldUtils.isStatic
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.minecraft.App
 import live.lingting.minecraft.data.CreativeTabs
+import live.lingting.minecraft.i18n.I18nLocale
 import org.slf4j.Logger
 import kotlin.reflect.KClass
 
@@ -42,8 +43,10 @@ interface IWorld {
     val creativeTab: CreativeTabs
         get() = CreativeTabs.MAIN
 
-    fun i18nNameKey(): String?
-
-    fun i18nDescKey(): String? = i18nNameKey()
+    /**
+     * 物品名称, 但是在代码里面是 desc
+     * @see net.minecraft.world.level.block.Block.getDescriptionId
+     */
+    val i18nDesc: I18nLocale?
 
 }
