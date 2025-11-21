@@ -2,11 +2,12 @@ package live.lingting.minecraft.launch
 
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.App.modId
-import live.lingting.minecraft.App.resourceName
 import live.lingting.minecraft.PanelItem
 import live.lingting.minecraft.PanelNodeBlock
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.block.IBlockEntity
+import live.lingting.minecraft.component.kt.isSuper
+import live.lingting.minecraft.data.CreativeTabs
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
@@ -16,6 +17,7 @@ import live.lingting.minecraft.launch.provider.LanguageProvider.Companion.transl
 import live.lingting.minecraft.launch.provider.LootProvider
 import live.lingting.minecraft.launch.provider.ModRecipeProvider
 import live.lingting.minecraft.launch.provider.ModelProvider
+import live.lingting.minecraft.world.IWorld
 import net.minecraft.core.registries.Registries
 import net.minecraft.data.loot.LootTableSubProvider
 import net.minecraft.data.recipes.RecipeProvider
@@ -36,6 +38,7 @@ import net.neoforged.neoforge.registries.DeferredBlock
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredItem
 import net.neoforged.neoforge.registries.DeferredRegister
+import java.util.EnumMap
 import java.util.function.Supplier
 
 /**
@@ -57,13 +60,13 @@ class NeoForgeLaunch(
 
     override val baseBlockId: String by lazy { PanelNodeBlock.ID }
 
-    val tab: DeferredHolder<CreativeModeTab, CreativeModeTab>
-
     val items = DeferredRegister.createItems(modId)
 
     val blocks = DeferredRegister.createBlocks(modId)
 
     val blockEntityTypes = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, modId)
+
+    val tabMap = EnumMap<CreativeTabs, DeferredHolder<CreativeModeTab, CreativeModeTab>>(CreativeTabs::class.java)
 
     init {
         onInitializer()
@@ -72,15 +75,18 @@ class NeoForgeLaunch(
         items.register(bus)
         blockEntityTypes.register(bus)
 
-        val create = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId)
-        tab = create.register(resourceName, Supplier {
-            CreativeModeTab.builder()
-                .title(I18n.MOD_TITLE.translatable())
-                .withTabsBefore(CreativeModeTabs.COMBAT)
-                .icon { baseItem.get().defaultInstance }
-                .build()
-        })
-        create.register(bus)
+        val tabCreater = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId)
+        CreativeTabs.entries.forEach {
+            val tab = tabCreater.register(it.id, Supplier {
+                CreativeModeTab.builder()
+                    .title(I18n.MOD_TITLE.translatable())
+                    .withTabsBefore(CreativeModeTabs.COMBAT)
+                    .icon { baseItem.get().defaultInstance }
+                    .build()
+            })
+            tabMap[it] = tab
+        }
+        tabCreater.register(bus)
         bus.addListener(::onTab)
         bus.addListener(::onClientGatherData)
 
@@ -117,12 +123,28 @@ class NeoForgeLaunch(
     }
 
     fun onTab(e: BuildCreativeModeTabContentsEvent) {
-        if (e.tabKey != tab.key) {
-            return
+        log.debug("[{}] register tab: {}", modId, e.tabKey)
+
+        registerBlockItems.forEach {
+            val block = it.get().block
+            if (block.isSuper(IWorld::class)) {
+                val tab = tabMap[(block as IWorld).creativeTab]
+                if (tab?.key == e.tabKey) {
+                    e.accept(it)
+                }
+            }
         }
-        log.debug("[{}] register tab", modId)
-        registerBlockItems.forEach { e.accept(it) }
-        registerItems.forEach { e.accept(it) }
+
+        registerItems.forEach {
+            val item = it.get()
+            if (item.isSuper(IWorld::class)) {
+                val tab = tabMap[(item as IWorld).creativeTab]
+                if (tab?.key == e.tabKey) {
+                    e.accept(it)
+                }
+            }
+        }
+
     }
 
     fun onClientGatherData(e: GatherDataEvent) {

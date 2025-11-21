@@ -4,6 +4,7 @@ import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.FieldUtils.isStatic
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.minecraft.App
+import live.lingting.minecraft.data.CreativeTabs
 import org.slf4j.Logger
 import kotlin.reflect.KClass
 
@@ -37,6 +38,9 @@ interface IWorld {
     }
 
     val id: String
+
+    val creativeTab: CreativeTabs
+        get() = CreativeTabs.MAIN
 
     fun i18nNameKey(): String?
 
