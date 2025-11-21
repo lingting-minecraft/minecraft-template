@@ -7,6 +7,7 @@ import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.minecraft.App
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.block.IBlockEntity
+import live.lingting.minecraft.data.BasicDataProvider
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.data.DataProvider
@@ -38,7 +39,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         private set
     var registerBlockItems = listOf<BI>()
         private set
-    var dataProviderClasses = mutableListOf<Class<out DataProvider>>()
+    var dataProviderClasses = mutableListOf<Class<out Any>>()
         private set
 
     protected open fun isIWorld(cls: Class<*>): Boolean {
@@ -63,7 +64,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
 
     protected open fun isDataProvider(cls: Class<*>): Boolean {
         if (cls.isAbstract || cls.isInterface) return false
-        return isSuper(cls, DataProvider::class.java)
+        return isSuper(cls, DataProvider::class.java) || isSuper(cls, BasicDataProvider::class.java)
     }
 
     protected open fun onInitializer() {
@@ -79,7 +80,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         val blockItems = mutableListOf<BI>()
         val blockEntityTypeMap = mutableMapOf<Class<out IBlock>, Class<out IBlockEntity>>()
         val blockEntityMap = mutableMapOf<Class<out IBlockEntity>, MutableList<B>>()
-        val dataProviderClasses = mutableListOf<Class<out DataProvider>>()
+        val dataProviderClasses = mutableListOf<Class<out Any>>()
 
         classes.forEach { c ->
             if (isIBlockEntity(c)) {
@@ -90,7 +91,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
                 }
             }
             if (isDataProvider(c)) {
-                dataProviderClasses.add(c as Class<DataProvider>)
+                dataProviderClasses.add(c)
             }
         }
 
