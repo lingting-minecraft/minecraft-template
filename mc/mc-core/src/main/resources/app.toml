@@ -1,0 +1,18 @@
+id = "@mod.id@"
+authors = "@mod.authors@"
+name = "@mod.name@"
+description = "@mod.description@"
+license = "@mod.license@"
+
+[minecraft]
+version = "@minecraft.version@"
+versionRange = "@minecraft.version_range@"
+
+[mappings]
+version = "@minecraft.mappings.version@"
+
+[neoforged]
+version = "@minecraft.neoforged.version@"
+
+[loader]
+versionRange = "@minecraft.loader.version_range@"
