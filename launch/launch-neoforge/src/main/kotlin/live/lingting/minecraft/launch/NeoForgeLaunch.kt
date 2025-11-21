@@ -1,5 +1,6 @@
 package live.lingting.minecraft.launch
 
+import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.App.modId
 import live.lingting.minecraft.App.resourceName
 import live.lingting.minecraft.PanelItem
@@ -13,8 +14,11 @@ import live.lingting.minecraft.launch.listener.NeoForgeLeftClickListener
 import live.lingting.minecraft.launch.provider.LanguageProvider
 import live.lingting.minecraft.launch.provider.LanguageProvider.Companion.translatable
 import live.lingting.minecraft.launch.provider.LootProvider
+import live.lingting.minecraft.launch.provider.ModRecipeProvider
 import live.lingting.minecraft.launch.provider.ModelProvider
 import net.minecraft.core.registries.Registries
+import net.minecraft.data.loot.LootTableSubProvider
+import net.minecraft.data.recipes.RecipeProvider
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.CreativeModeTabs
@@ -45,9 +49,12 @@ class NeoForgeLaunch(
     val fmlContainer: FMLModContainer,
     val type: Dist
 ) : Launch<DeferredItem<Item>, DeferredBlock<Block>, DeferredItem<BlockItem>>() {
+
     override val isClient: Boolean
         get() = type == Dist.CLIENT
+
     override val baseItemId: String by lazy { PanelItem.ID }
+
     override val baseBlockId: String by lazy { PanelNodeBlock.ID }
 
     val tab: DeferredHolder<CreativeModeTab, CreativeModeTab>
@@ -124,7 +131,18 @@ class NeoForgeLaunch(
             ModelProvider.register(e, registerItems, registerBlocks)
         }
         if (e.includeServer()) {
+            val lootClasses = mutableListOf<Class<LootTableSubProvider>>()
+            val recipeClasses = mutableListOf<Class<RecipeProvider>>()
+            dataProviderClasses.forEach {
+                if (isSuper(it, LootTableSubProvider::class.java)) {
+                    lootClasses.add(it as Class<LootTableSubProvider>)
+                }
+                if (isSuper(it, RecipeProvider::class.java)) {
+                    recipeClasses.add(it as Class<RecipeProvider>)
+                }
+            }
             LootProvider.register(e, lootClasses, registerItems, registerBlocks)
+            ModRecipeProvider.register(e, recipeClasses, registerItems, registerBlocks)
         }
     }
 

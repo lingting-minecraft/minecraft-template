@@ -3,7 +3,7 @@ package live.lingting.minecraft.launch.provider
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.component.kt.isSuper
-import live.lingting.minecraft.loot.BlockLootProvider
+import live.lingting.minecraft.data.BasicDataProvider
 import net.minecraft.data.loot.BlockLootSubProvider
 import net.minecraft.data.loot.LootTableProvider
 import net.minecraft.data.loot.LootTableSubProvider
@@ -42,8 +42,8 @@ class LootProvider(
                 val entry = SubProviderEntry({ provider ->
                     ClassUtils.newInstance(lootCls, true, listOf(provider))
                         .also { ltp ->
-                            if (ltp.isSuper(BlockLootProvider::class)) {
-                                val p = ltp as BlockLootProvider
+                            if (ltp.isSuper(BasicDataProvider::class)) {
+                                val p = ltp as BasicDataProvider
                                 p.setItems { registerItems.map { it.get() } }
                                 p.setBlocks { registerBlocks.map { it.get() } }
                             }

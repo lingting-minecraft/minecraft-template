@@ -9,7 +9,7 @@ import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.world.IWorld
-import net.minecraft.data.loot.LootTableSubProvider
+import net.minecraft.data.DataProvider
 
 /**
  * @author lingting 2025/11/15 14:33
@@ -38,7 +38,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         private set
     var registerBlockItems = listOf<BI>()
         private set
-    var lootClasses = mutableListOf<Class<LootTableSubProvider>>()
+    var dataProviderClasses = mutableListOf<Class<out DataProvider>>()
         private set
 
     protected open fun isIWorld(cls: Class<*>): Boolean {
@@ -61,16 +61,16 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         return isSuper(cls, IBlockEntity::class.java)
     }
 
-    protected open fun isLootProvider(cls: Class<*>): Boolean {
+    protected open fun isDataProvider(cls: Class<*>): Boolean {
         if (cls.isAbstract || cls.isInterface) return false
-        return isSuper(cls, LootTableSubProvider::class.java)
+        return isSuper(cls, DataProvider::class.java)
     }
 
     protected open fun onInitializer() {
         log.debug("[{}] onInitializer", App.modId)
         val loaders = ClassUtils.classLoaders(javaClass.classLoader)
         val classes = packages.flatMap { p ->
-            ClassUtils.scan<Any>(p, { isIWorld(it) || isIBlockEntity(it) || isLootProvider(it) }, loaders)
+            ClassUtils.scan<Any>(p, { isIWorld(it) || isIBlockEntity(it) || isDataProvider(it) }, loaders)
         }.sortedBy { it.name.reversed() }
 
         log.debug("[{}] 扫描到待加载类数量: {}", App.modId, classes.size)
@@ -79,7 +79,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         val blockItems = mutableListOf<BI>()
         val blockEntityTypeMap = mutableMapOf<Class<out IBlock>, Class<out IBlockEntity>>()
         val blockEntityMap = mutableMapOf<Class<out IBlockEntity>, MutableList<B>>()
-        val lootClasses = mutableListOf<Class<LootTableSubProvider>>()
+        val dataProviderClasses = mutableListOf<Class<out DataProvider>>()
 
         classes.forEach { c ->
             if (isIBlockEntity(c)) {
@@ -89,8 +89,8 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
                     blockEntityTypeMap[it] = cls
                 }
             }
-            if (isLootProvider(c)) {
-                lootClasses.add(c as Class<LootTableSubProvider>)
+            if (isDataProvider(c)) {
+                dataProviderClasses.add(c as Class<DataProvider>)
             }
         }
 
@@ -130,7 +130,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         registerItems = items
         registerBlocks = blocks
         registerBlockItems = blockItems
-        this.lootClasses = lootClasses
+        this.dataProviderClasses = dataProviderClasses
         registerBlockEntityMapping(blockEntityTypeMap)
         registerBlockEntity(blockEntityMap)
     }
