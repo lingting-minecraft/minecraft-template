@@ -3,7 +3,9 @@ import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import java.util.regex.Pattern
 
-val projectGroup = "live.lingting.minecraft.lwbkm"
+val modId = project.properties["mod.id"] as String
+
+val projectGroup = "live.lingting.minecraft.$modId"
 val projectVersion = "2025.08.09-beta1"
 
 // 用于子模块获取包管理信息
@@ -17,8 +19,6 @@ val javaVersion = JavaVersion.VERSION_21
 // 字符集
 val encoding = "UTF-8"
 val ideaLanguageLevel = IdeaLanguageLevel(javaVersion)
-
-val modId = project.properties["mod.id"] as String
 
 plugins {
     id("idea")
