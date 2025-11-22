@@ -1,4 +1,4 @@
-package live.lingting.minecraft.data
+package live.lingting.minecraft.eunums
 
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.i18n.I18nLocale

@@ -7,7 +7,7 @@ import live.lingting.minecraft.PanelNodeBlock
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.component.kt.isSuper
-import live.lingting.minecraft.data.CreativeTabs
+import live.lingting.minecraft.eunums.CreativeTabs
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder

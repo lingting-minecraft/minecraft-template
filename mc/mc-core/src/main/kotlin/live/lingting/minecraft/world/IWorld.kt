@@ -4,7 +4,7 @@ import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.FieldUtils.isStatic
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.minecraft.App
-import live.lingting.minecraft.data.CreativeTabs
+import live.lingting.minecraft.eunums.CreativeTabs
 import live.lingting.minecraft.i18n.I18nLocale
 import org.slf4j.Logger
 import kotlin.reflect.KClass
