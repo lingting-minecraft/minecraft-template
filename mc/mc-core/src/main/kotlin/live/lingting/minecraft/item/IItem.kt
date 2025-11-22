@@ -48,7 +48,6 @@ abstract class IItem : Item, IWorld {
         components: MutableList<Component?>,
         flag: TooltipFlag
     ) {
-        super.appendHoverText(stack, tooltip, components, flag)
     }
 
     override fun useOn(context: UseOnContext): InteractionResult {

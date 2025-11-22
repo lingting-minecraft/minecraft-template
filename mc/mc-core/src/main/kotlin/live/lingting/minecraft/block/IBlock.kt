@@ -51,7 +51,6 @@ abstract class IBlock : Block, EntityBlock, IWorld {
         components: MutableList<Component?>,
         flag: TooltipFlag
     ) {
-        super.appendHoverText(stack, tooltip, components, flag)
     }
 
     override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {

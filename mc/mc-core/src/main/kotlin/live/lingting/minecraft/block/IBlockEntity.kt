@@ -7,10 +7,16 @@ import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.FieldUtils.isStatic
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.minecraft.App
+import live.lingting.minecraft.component.kt.isSuper
+import live.lingting.minecraft.world.IWorld
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.component.DataComponentMap
+import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.component.BlockItemStateProperties
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
@@ -27,6 +33,8 @@ import kotlin.reflect.KClass
 abstract class IBlockEntity : BlockEntity {
 
     companion object {
+
+        const val ID = "id"
 
         @JvmStatic
         fun types(cls: Class<IBlockEntity>, log: Logger = logger(cls)): List<Class<out IBlock>> {
@@ -139,11 +147,37 @@ abstract class IBlockEntity : BlockEntity {
     }
 
     override fun saveAdditional(tag: CompoundTag, provider: HolderLookup.Provider) {
-        super.saveAdditional(tag, provider)
+        saveTag(tag, provider)
     }
 
     override fun loadAdditional(tag: CompoundTag, provider: HolderLookup.Provider) {
-        super.loadAdditional(tag, provider)
+        loadTag(tag, provider)
     }
+
+    /**
+     * 存储nbt信息: 需要再掉落物项设置时指定复制实体数据 BLOCK_ENTITY_DATA
+     * 存储state信息: 需要指定 BLOCK_STATE
+     */
+    override fun collectImplicitComponents(builder: DataComponentMap.Builder) {
+        val block = blockState.block
+        if (block.isSuper(IWorld::class)) {
+            val tag = CompoundTag()
+            saveTag(tag, null)
+            if (!tag.contains(ID)) {
+                tag.putString(ID, (block as IWorld).id)
+            }
+            builder.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag))
+        }
+
+        var state = BlockItemStateProperties.EMPTY
+        blockState.properties.forEach {
+            state = state.with(it, blockState)
+        }
+        builder.set(DataComponents.BLOCK_STATE, state)
+    }
+
+    abstract fun saveTag(tag: CompoundTag, provider: HolderLookup.Provider?)
+
+    abstract fun loadTag(tag: CompoundTag, provider: HolderLookup.Provider?)
 
 }

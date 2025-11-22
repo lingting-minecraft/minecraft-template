@@ -18,6 +18,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
  */
 object NeoForgeLeftClickListener {
 
+    /**
+     * 类似的事件 mc可能会因为网络和内部重试(特别是在返回REJECT时)导致一个点击多次触发相同的事件. 内部实现要做好防重.
+     */
     @SubscribeEvent
     fun onTrigger(e: PlayerInteractEvent.LeftClickBlock) {
         val player = e.entity

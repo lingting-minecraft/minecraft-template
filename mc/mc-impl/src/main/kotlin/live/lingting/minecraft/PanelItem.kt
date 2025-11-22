@@ -44,7 +44,7 @@ class PanelItem : IItem, LeftClickListener {
             return ClickBlockResult.PASS
         }
         if (!player.isClientSide) {
-            (entity as PanelNodeBlockEntity).inactive(level, pos)
+            (entity as PanelNodeBlockEntity).inactive(player, level, pos)
         }
         return ClickBlockResult.REJECT
     }
@@ -57,7 +57,6 @@ class PanelItem : IItem, LeftClickListener {
         components: MutableList<Component?>,
         flag: TooltipFlag
     ) {
-        super.appendHoverText(stack, tooltip, components, flag)
         components.add(I18n.ITEM.PANEL_HOVER.translatable(stack.count).withStyle(ChatFormatting.GREEN))
     }
 
@@ -68,7 +67,7 @@ class PanelItem : IItem, LeftClickListener {
         }
         // 数据变化仅在服务端进行
         if (!context.isClientSide) {
-            (entity as PanelNodeBlockEntity).active(context.level, context.clickedPos)
+            (entity as PanelNodeBlockEntity).active(context.player, context.level, context.clickedPos)
         }
         // 确保客户端和服务端同步结果同步
         return InteractionResult.SUCCESS
