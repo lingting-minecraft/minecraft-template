@@ -70,7 +70,7 @@ class PanelNodeBlock : IBlock {
 
         override fun generate() {
             val block = getBlock(ID)
-            dropSelfAll(block)
+            dropCopy(block)
         }
 
     }

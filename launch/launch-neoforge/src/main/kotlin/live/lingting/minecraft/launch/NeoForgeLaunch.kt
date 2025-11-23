@@ -12,6 +12,7 @@ import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
 import live.lingting.minecraft.launch.listener.NeoForgeLeftClickListener
+import live.lingting.minecraft.launch.provider.BlockTagsProvider
 import live.lingting.minecraft.launch.provider.LanguageProvider
 import live.lingting.minecraft.launch.provider.LootProvider
 import live.lingting.minecraft.launch.provider.ModRecipeProvider
@@ -74,9 +75,9 @@ class NeoForgeLaunch(
         items.register(bus)
         blockEntityTypes.register(bus)
 
-        val tabCreater = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId)
+        val tabCreate = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId)
         CreativeTabs.entries.forEach {
-            val tab = tabCreater.register(it.id, Supplier {
+            val tab = tabCreate.register(it.id, Supplier {
                 CreativeModeTab.builder()
                     .title(I18n.MOD_TITLE.translatable())
                     .withTabsBefore(CreativeModeTabs.COMBAT)
@@ -85,7 +86,7 @@ class NeoForgeLaunch(
             })
             tabMap[it] = tab
         }
-        tabCreater.register(bus)
+        tabCreate.register(bus)
         bus.addListener(::onTab)
         bus.addListener(::onClientGatherData)
 
@@ -146,25 +147,28 @@ class NeoForgeLaunch(
 
     }
 
+    /**
+     * 不区分客户端和服务端, 这样子一个jar两边都能用
+     * 缺点: 服务端jar比预期要大很多(客户端资源也打进去了)
+     */
     fun onClientGatherData(e: GatherDataEvent) {
-        if (e.includeClient()) {
-            LanguageProvider.register(e, registerItems, registerBlocks)
-            ModelProvider.register(e, registerItems, registerBlocks)
-        }
-        if (e.includeServer()) {
-            val lootClasses = mutableListOf<Class<LootTableSubProvider>>()
-            val recipeClasses = mutableListOf<Class<RecipeProvider>>()
-            dataProviderClasses.forEach {
-                if (isSuper(it, LootTableSubProvider::class.java)) {
-                    lootClasses.add(it as Class<LootTableSubProvider>)
-                }
-                if (isSuper(it, RecipeProvider::class.java)) {
-                    recipeClasses.add(it as Class<RecipeProvider>)
-                }
+        LanguageProvider.register(e, registerItems, registerBlocks)
+        ModelProvider.register(e, registerItems, registerBlocks)
+
+        val lootClasses = mutableListOf<Class<LootTableSubProvider>>()
+        val recipeClasses = mutableListOf<Class<RecipeProvider>>()
+        dataProviderClasses.forEach {
+            if (isSuper(it, LootTableSubProvider::class.java)) {
+                lootClasses.add(it as Class<LootTableSubProvider>)
             }
-            LootProvider.register(e, lootClasses, registerItems, registerBlocks)
-            ModRecipeProvider.register(e, recipeClasses, registerItems, registerBlocks)
+            if (isSuper(it, RecipeProvider::class.java)) {
+                recipeClasses.add(it as Class<RecipeProvider>)
+            }
         }
+        // 下面这些数据, 客户端和服务端都需要包含
+        LootProvider.register(e, lootClasses, registerItems, registerBlocks)
+        ModRecipeProvider.register(e, recipeClasses, registerItems, registerBlocks)
+        BlockTagsProvider.register(e, registerBlocks)
     }
 
 }

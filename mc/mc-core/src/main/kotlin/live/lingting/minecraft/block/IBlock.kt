@@ -7,6 +7,7 @@ import live.lingting.minecraft.i18n.I18nLocale
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
+import net.minecraft.tags.TagKey
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
@@ -37,6 +38,9 @@ abstract class IBlock : Block, EntityBlock, IWorld {
     protected val log = logger()
 
     constructor(p: Properties) : super(p)
+
+    open val tags: List<TagKey<Block>>?
+        get() = null
 
     override val id: String = IWorld.id(javaClass)!!
 
