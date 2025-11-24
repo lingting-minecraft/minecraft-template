@@ -4,19 +4,25 @@ import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isAbstract
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.framework.util.Slf4jUtils.logger
+import live.lingting.framework.value.WaitValue
 import live.lingting.minecraft.App
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.block.IBlockEntity
+import live.lingting.minecraft.command.BasicCommand
 import live.lingting.minecraft.data.BasicDataProvider
+import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.data.DataProvider
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.block.Block
+import java.util.function.Supplier
 
 /**
  * @author lingting 2025/11/15 14:33
  */
 @Suppress("UNCHECKED_CAST")
-abstract class Launch<I : Any, B : Any, BI : Any> {
+abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
 
     val log = logger()
 
@@ -39,39 +45,52 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         private set
     var registerBlockItems = listOf<BI>()
         private set
-    var dataProviderClasses = mutableListOf<Class<out Any>>()
+    var dataProviderClasses = listOf<Class<out Any>>()
+        private set
+    var commandClasses = listOf<Class<out BasicCommand>>()
         private set
 
+    protected val registerDataValue = WaitValue.of<RegisterData>()
+
+    val registerData: RegisterData
+        get() = registerDataValue.notNull()
+
     protected open fun isIWorld(cls: Class<*>): Boolean {
-        if (cls.isAbstract || cls.isInterface) return false
         return isSuper(cls, IWorld::class.java)
     }
 
     protected open fun isIItem(cls: Class<*>): Boolean {
-        if (cls.isAbstract || cls.isInterface) return false
         return isSuper(cls, IItem::class.java)
     }
 
     protected open fun isIBlock(cls: Class<*>): Boolean {
-        if (cls.isAbstract || cls.isInterface) return false
         return isSuper(cls, IBlock::class.java)
     }
 
     protected open fun isIBlockEntity(cls: Class<*>): Boolean {
-        if (cls.isAbstract || cls.isInterface) return false
         return isSuper(cls, IBlockEntity::class.java)
     }
 
     protected open fun isDataProvider(cls: Class<*>): Boolean {
-        if (cls.isAbstract || cls.isInterface) return false
-        return isSuper(cls, DataProvider::class.java) || isSuper(cls, BasicDataProvider::class.java)
+        return isSuper(cls, DataProvider::class.java) ||
+                isSuper(cls, BasicDataProvider::class.java)
     }
+
+    protected open fun isCommand(cls: Class<*>) = isSuper(cls, BasicCommand::class.java)
 
     protected open fun onInitializer() {
         log.debug("[{}] onInitializer", App.modId)
         val loaders = ClassUtils.classLoaders(javaClass.classLoader)
         val classes = packages.flatMap { p ->
-            ClassUtils.scan<Any>(p, { isIWorld(it) || isIBlockEntity(it) || isDataProvider(it) }, loaders)
+            ClassUtils.scan<Any>(p, {
+                if (it.isAbstract || it.isInterface) {
+                    false
+                } else if (it.packageName.startsWith(javaClass.packageName)) {
+                    false
+                } else {
+                    isIWorld(it) || isIBlockEntity(it) || isDataProvider(it) || isCommand(it)
+                }
+            }, loaders)
         }.sortedBy { it.name.reversed() }
 
         log.debug("[{}] 扫描到待加载类数量: {}", App.modId, classes.size)
@@ -81,6 +100,7 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         val blockEntityTypeMap = mutableMapOf<Class<out IBlock>, Class<out IBlockEntity>>()
         val blockEntityMap = mutableMapOf<Class<out IBlockEntity>, MutableList<B>>()
         val dataProviderClasses = mutableListOf<Class<out Any>>()
+        val commandClasses = mutableListOf<Class<out BasicCommand>>()
 
         classes.forEach { c ->
             if (isIBlockEntity(c)) {
@@ -92,6 +112,9 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
             }
             if (isDataProvider(c)) {
                 dataProviderClasses.add(c)
+            }
+            if (isCommand(c)) {
+                commandClasses.add(c as Class<out BasicCommand>)
             }
         }
 
@@ -131,7 +154,9 @@ abstract class Launch<I : Any, B : Any, BI : Any> {
         registerItems = items
         registerBlocks = blocks
         registerBlockItems = blockItems
+        registerDataValue.update(RegisterData.from(registerItems, registerBlocks))
         this.dataProviderClasses = dataProviderClasses
+        this.commandClasses = commandClasses
         registerBlockEntityMapping(blockEntityTypeMap)
         registerBlockEntity(blockEntityMap)
     }

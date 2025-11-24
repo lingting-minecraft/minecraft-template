@@ -1,4 +1,4 @@
-package live.lingting.minecraft.launch.listener
+package live.lingting.minecraft.launch.bus
 
 import live.lingting.minecraft.component.kt.isSuper
 import live.lingting.minecraft.eunums.ClickBlockResult

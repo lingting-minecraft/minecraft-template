@@ -11,7 +11,8 @@ import live.lingting.minecraft.eunums.CreativeTabs
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
-import live.lingting.minecraft.launch.listener.NeoForgeLeftClickListener
+import live.lingting.minecraft.launch.bus.NeoForgeCommand
+import live.lingting.minecraft.launch.bus.NeoForgeLeftClickListener
 import live.lingting.minecraft.launch.provider.BlockTagsProvider
 import live.lingting.minecraft.launch.provider.LanguageProvider
 import live.lingting.minecraft.launch.provider.LootProvider
@@ -90,7 +91,9 @@ class NeoForgeLaunch(
         bus.addListener(::onTab)
         bus.addListener(::onClientGatherData)
 
-        NeoForge.EVENT_BUS.register(NeoForgeLeftClickListener)
+        val bus = NeoForge.EVENT_BUS
+        bus.register(NeoForgeLeftClickListener)
+        bus.register(NeoForgeCommand(commandClasses))
     }
 
     override fun registerItem(
