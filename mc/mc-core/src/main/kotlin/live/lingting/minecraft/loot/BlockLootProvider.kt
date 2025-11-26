@@ -2,6 +2,7 @@ package live.lingting.minecraft.loot
 
 import live.lingting.framework.value.WaitValue
 import live.lingting.minecraft.component.range.FloatRange
+import live.lingting.minecraft.data.RegisterData
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
 import net.minecraft.data.loot.BlockLootSubProvider
@@ -20,7 +21,6 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator
 import java.util.function.BiConsumer
-import java.util.function.Supplier
 
 /**
  * @author lingting 2025/11/21 16:35
@@ -35,19 +35,11 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
         provider
     )
 
-    private val itemsValue = WaitValue.of<Supplier<List<Item>>>()
+    private val registerDataValue = WaitValue.of<RegisterData>()
 
-    override val items
-        get() = itemsValue.notNull().get()
-
-    override fun setItems(value: Supplier<List<Item>>) = itemsValue.update(value)
-
-    private val blocksValue = WaitValue.of<Supplier<List<Block>>>()
-
-    override val blocks
-        get() = blocksValue.notNull().get()
-
-    override fun setBlocks(value: Supplier<List<Block>>) = blocksValue.update(value)
+    override var registerData: RegisterData
+        get() = registerDataValue.notNull()
+        set(value) = registerDataValue.update(value)
 
     // region mc
 

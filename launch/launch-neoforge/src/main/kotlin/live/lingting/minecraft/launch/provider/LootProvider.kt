@@ -4,18 +4,17 @@ import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.component.kt.isSuper
 import live.lingting.minecraft.data.BasicDataProvider
+import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.loot.BlockLootProvider
 import net.minecraft.core.HolderLookup
+import net.minecraft.data.loot.BlockLootSubProvider
 import net.minecraft.data.loot.LootTableProvider
 import net.minecraft.data.loot.LootTableSubProvider
 import net.minecraft.resources.ResourceKey
-import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.storage.loot.LootTable
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import net.neoforged.neoforge.data.event.GatherDataEvent
-import net.neoforged.neoforge.registries.DeferredBlock
-import net.neoforged.neoforge.registries.DeferredItem
 import java.util.function.BiConsumer
 
 /**
@@ -31,12 +30,13 @@ class LootProvider(
 
         fun register(
             e: GatherDataEvent,
-            lootClasses: List<Class<LootTableSubProvider>>,
-            registerItems: List<DeferredItem<Item>>,
-            registerBlocks: List<DeferredBlock<Block>>
+            lootClasses: List<Class<out LootTableSubProvider>>, registerData: RegisterData
         ) {
-            val blockClasses = mutableListOf<Class<BlockLootProvider>>()
-            val entityClasses = mutableListOf<Class<LootTableSubProvider>>()
+            val blockClasses = mutableListOf<Class<out BlockLootProvider>>()
+            // todo 自定义的实体类型
+            val entityClasses = mutableListOf<Class<out LootTableSubProvider>>()
+            // 非内部类型
+            val otherClasses = mutableListOf<Class<out LootTableSubProvider>>()
 
             lootClasses.forEach {
                 if (isSuper(it, BlockEntryProvider::class.java)) {
@@ -48,14 +48,28 @@ class LootProvider(
                 }
             }
 
-            val list = listOf(
-                SubProviderEntry({ provider ->
-                    BlockEntryProvider(provider, blockClasses).apply {
-                        setItems { registerItems.map { it.get() } }
-                        setBlocks { registerBlocks.map { it.get() } }
+            val list: List<SubProviderEntry> = buildList {
+                add(
+                    SubProviderEntry({ provider ->
+                        BlockEntryProvider(provider, blockClasses).apply {
+                            this.registerData = registerData
+                        }
+                    }, LootContextParamSets.BLOCK)
+                )
+
+                otherClasses.forEach {
+                    val set = if (isSuper(it, BlockLootSubProvider::class.java)) {
+                        LootContextParamSets.BLOCK
+                    } else {
+                        LootContextParamSets.ENTITY
                     }
-                }, LootContextParamSets.BLOCK)
-            )
+                    val entry = SubProviderEntry({ provider ->
+                        ClassUtils.newInstance(it, false, listOf(provider))
+                    }, set)
+                    add(entry)
+                }
+            }
+
 
 
             if (entityClasses.isNotEmpty()) {
@@ -68,7 +82,7 @@ class LootProvider(
 
     class BlockEntryProvider(
         val provider: HolderLookup.Provider,
-        val lootClasses: List<Class<BlockLootProvider>>
+        val lootClasses: List<Class<out BlockLootProvider>>
     ) : BlockLootProvider(provider) {
 
         override fun generate(biConsumer: BiConsumer<ResourceKey<LootTable?>?, LootTable.Builder?>) {
@@ -77,8 +91,7 @@ class LootProvider(
                     .also { ltp ->
                         if (ltp.isSuper(BasicDataProvider::class)) {
                             val p = ltp as BasicDataProvider
-                            p.setItems { items }
-                            p.setBlocks { blocks }
+                            p.registerData = registerData
                         }
                     }
 

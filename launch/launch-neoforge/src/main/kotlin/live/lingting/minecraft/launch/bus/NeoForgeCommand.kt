@@ -14,9 +14,11 @@ class NeoForgeCommand(
 
     @SubscribeEvent
     fun onCommand(e: RegisterCommandsEvent) {
+        val selection = e.commandSelection
+        val context = e.buildContext
         classes.forEach {
             val command = ClassUtils.newInstance(it)
-            e.dispatcher.register(command.generate())
+            e.dispatcher.register(command.generate(selection, context))
         }
     }
 

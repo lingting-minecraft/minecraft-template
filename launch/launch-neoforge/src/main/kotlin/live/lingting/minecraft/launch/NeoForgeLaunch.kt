@@ -7,6 +7,7 @@ import live.lingting.minecraft.PanelNodeBlock
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.component.kt.isSuper
+import live.lingting.minecraft.data.BasicFeatureProvider
 import live.lingting.minecraft.eunums.CreativeTabs
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
@@ -14,10 +15,12 @@ import live.lingting.minecraft.launch.basic.NBlockEntityHolder
 import live.lingting.minecraft.launch.bus.NeoForgeCommand
 import live.lingting.minecraft.launch.bus.NeoForgeLeftClickListener
 import live.lingting.minecraft.launch.provider.BlockTagsProvider
+import live.lingting.minecraft.launch.provider.DatapackProvider
 import live.lingting.minecraft.launch.provider.LanguageProvider
 import live.lingting.minecraft.launch.provider.LootProvider
 import live.lingting.minecraft.launch.provider.ModRecipeProvider
 import live.lingting.minecraft.launch.provider.ModelProvider
+import live.lingting.minecraft.launch.provider.PackMetaProvider
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.core.registries.Registries
 import net.minecraft.data.loot.LootTableSubProvider
@@ -155,11 +158,13 @@ class NeoForgeLaunch(
      * 缺点: 服务端jar比预期要大很多(客户端资源也打进去了)
      */
     fun onClientGatherData(e: GatherDataEvent) {
+        PackMetaProvider.register(e)
         LanguageProvider.register(e, registerItems, registerBlocks)
         ModelProvider.register(e, registerItems, registerBlocks)
 
-        val lootClasses = mutableListOf<Class<LootTableSubProvider>>()
-        val recipeClasses = mutableListOf<Class<RecipeProvider>>()
+        val lootClasses = mutableListOf<Class<out LootTableSubProvider>>()
+        val recipeClasses = mutableListOf<Class<out RecipeProvider>>()
+        val featureProviderClasses = mutableListOf<Class<out BasicFeatureProvider<*>>>()
         dataProviderClasses.forEach {
             if (isSuper(it, LootTableSubProvider::class.java)) {
                 lootClasses.add(it as Class<LootTableSubProvider>)
@@ -167,11 +172,15 @@ class NeoForgeLaunch(
             if (isSuper(it, RecipeProvider::class.java)) {
                 recipeClasses.add(it as Class<RecipeProvider>)
             }
+            if (isSuper(it, BasicFeatureProvider::class.java)) {
+                featureProviderClasses.add(it as Class<BasicFeatureProvider<*>>)
+            }
         }
         // 下面这些数据, 客户端和服务端都需要包含
-        LootProvider.register(e, lootClasses, registerItems, registerBlocks)
-        ModRecipeProvider.register(e, recipeClasses, registerItems, registerBlocks)
-        BlockTagsProvider.register(e, registerBlocks)
+        LootProvider.register(e, lootClasses, registerData)
+        ModRecipeProvider.register(e, recipeClasses, registerData)
+        BlockTagsProvider.register(e, registerData)
+        DatapackProvider.register(e, featureProviderClasses, registerData)
     }
 
 }

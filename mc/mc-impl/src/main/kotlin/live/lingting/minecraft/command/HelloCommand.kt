@@ -1,9 +1,9 @@
 package live.lingting.minecraft.command
 
-import com.mojang.brigadier.Command.SINGLE_SUCCESS
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import live.lingting.minecraft.i18n.I18n
 import net.minecraft.ChatFormatting
+import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 
@@ -12,18 +12,21 @@ import net.minecraft.commands.Commands
  */
 class HelloCommand : BasicCommand() {
 
-    override fun generate(): LiteralArgumentBuilder<CommandSourceStack> {
+    override fun generate(
+        selection: Commands.CommandSelection,
+        context: CommandBuildContext
+    ): LiteralArgumentBuilder<CommandSourceStack> {
         return Commands.literal("hello")
             .executes {
                 it.source.sendSuccess({ I18n.MOD_TITLE.translatable() }, false)
-                SINGLE_SUCCESS
+                SUCCESS
             }
             .then(Commands.literal("-s").executes {
                 it.source.sendSuccess({
                     I18n.MOD_TITLE.translatable()
                         .withStyle(ChatFormatting.GOLD)
                 }, true)
-                SINGLE_SUCCESS
+                SUCCESS
             })
     }
 

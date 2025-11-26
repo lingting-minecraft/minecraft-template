@@ -39,6 +39,10 @@ abstract class IBlock : Block, EntityBlock, IWorld {
 
     constructor(p: Properties) : super(p)
 
+    /**
+     * 声明物品尅用哪些工具, 这里同时支持 斧头和稿子. 需要配合 requiresCorrectToolForDrops()
+     * @see Properties.requiresCorrectToolForDrops
+     */
     open val tags: List<TagKey<Block>>?
         get() = null
 
