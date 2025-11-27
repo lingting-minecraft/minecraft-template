@@ -75,11 +75,9 @@ class PanelNodeBlock : IBlock {
 
     }
 
-    class Recipe(o: PackOutput, f: CompletableFuture<HolderLookup.Provider>) : ArrayRecipeProvider(o, f) {
+    class Recipe : ArrayRecipeProvider() {
 
-        override val prefix = ID
-
-        override fun builderes(): Collection<RecipeBuilder> {
+        override fun all(): Collection<RecipeBuilder> {
             val block = getBlock(ID)
             return buildList {
                 add(

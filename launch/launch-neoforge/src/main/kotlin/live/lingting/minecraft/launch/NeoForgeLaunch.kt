@@ -178,7 +178,7 @@ class NeoForgeLaunch(
         }
         // 下面这些数据, 客户端和服务端都需要包含
         LootProvider.register(e, lootClasses, registerData)
-        ModRecipeProvider.register(e, recipeClasses, registerData)
+        RecipeProvider.register(e, recipeClasses, registerData)
         BlockTagsProvider.register(e, registerData)
         DatapackProvider.register(e, featureProviderClasses, registerData)
     }
