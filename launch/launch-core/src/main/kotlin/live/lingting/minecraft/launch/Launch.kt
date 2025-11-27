@@ -1,5 +1,6 @@
 package live.lingting.minecraft.launch
 
+import com.mojang.serialization.MapCodec
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isAbstract
 import live.lingting.framework.util.ClassUtils.isSuper
@@ -12,10 +13,13 @@ import live.lingting.minecraft.command.BasicCommand
 import live.lingting.minecraft.data.BasicDataProvider
 import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.item.ItemSource
+import live.lingting.minecraft.loot.BasicNumberProvider
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.data.DataProvider
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider
 import java.util.function.Supplier
 
 /**
@@ -73,7 +77,12 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
 
     protected open fun isDataProvider(cls: Class<*>): Boolean {
         return isSuper(cls, DataProvider::class.java) ||
-                isSuper(cls, BasicDataProvider::class.java)
+                isSuper(cls, BasicDataProvider::class.java) ||
+                isSuper(cls, BasicNumberProvider::class.java)
+    }
+
+    protected open fun isNumberProvider(cls: Class<*>): Boolean {
+        return isSuper(cls, BasicNumberProvider::class.java)
     }
 
     protected open fun isCommand(cls: Class<*>) = isSuper(cls, BasicCommand::class.java)
@@ -88,7 +97,11 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                 } else if (it.packageName.startsWith(javaClass.packageName)) {
                     false
                 } else {
-                    isWorld(it) || isBlockEntity(it) || isDataProvider(it) || isCommand(it)
+                    isWorld(it) ||
+                            isBlockEntity(it) ||
+                            isDataProvider(it) ||
+                            isCommand(it) ||
+                            isNumberProvider(it)
                 }
             }, loaders)
         }.sortedBy { it.name.reversed() }
@@ -115,6 +128,14 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
             }
             if (isCommand(c)) {
                 commandClasses.add(c as Class<out BasicCommand>)
+            }
+            if (isNumberProvider(c)) {
+                val cls = c as Class<out NumberProvider>
+                val name = BasicNumberProvider.name(cls)
+                val codec = BasicNumberProvider.codes(cls)
+                log.debug("[{}] 注册战利品数据类型: {}", modId, name)
+                val supplier = registerNumberProvider(name, codec)
+                BasicNumberProvider.upsert(cls, supplier)
             }
         }
 
@@ -175,5 +196,10 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
     protected abstract fun registerBlockEntityMapping(map: Map<Class<out BlockSource>, Class<out IBlockEntity>>)
 
     protected abstract fun registerBlockEntity(map: Map<Class<out IBlockEntity>, List<B>>)
+
+    protected abstract fun registerNumberProvider(
+        name: String,
+        codec: MapCodec<out NumberProvider>
+    ): Supplier<LootNumberProviderType>
 
 }

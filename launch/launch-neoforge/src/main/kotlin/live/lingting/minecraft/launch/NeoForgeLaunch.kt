@@ -1,5 +1,6 @@
 package live.lingting.minecraft.launch
 
+import com.mojang.serialization.MapCodec
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.App.modId
 import live.lingting.minecraft.PanelItem
@@ -30,6 +31,8 @@ import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
@@ -72,6 +75,8 @@ class NeoForgeLaunch(
 
     val tabMap = EnumMap<CreativeTabs, DeferredHolder<CreativeModeTab, CreativeModeTab>>(CreativeTabs::class.java)
 
+    val numberProvider = DeferredRegister.create(Registries.LOOT_NUMBER_PROVIDER_TYPE, modId)
+
     init {
         onInitializer()
 
@@ -91,6 +96,7 @@ class NeoForgeLaunch(
             tabMap[it] = tab
         }
         tabCreate.register(bus)
+        numberProvider.register(bus)
         bus.addListener(::onTab)
         bus.addListener(::onClientGatherData)
 
@@ -126,6 +132,13 @@ class NeoForgeLaunch(
             val holder = NBlockEntityHolder(clazz, blockEntityTypes) { blocks.map { it.get() } }
             IBlockEntity.register(holder)
         }
+    }
+
+    override fun registerNumberProvider(
+        name: String,
+        codec: MapCodec<out NumberProvider>
+    ): Supplier<LootNumberProviderType> {
+        return numberProvider.register(name, Supplier { LootNumberProviderType(codec) })
     }
 
     fun onTab(e: BuildCreativeModeTabContentsEvent) {
