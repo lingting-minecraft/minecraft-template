@@ -2,6 +2,7 @@ package live.lingting.minecraft.launch.model
 
 import jakarta.annotation.Resource
 import live.lingting.framework.value.WaitValue
+import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.launch.provider.ModelProvider
 import live.lingting.minecraft.textures.TexturesItem
 import net.minecraft.world.level.block.Block
@@ -33,6 +34,8 @@ abstract class NBlockModel : NModel() {
 
     val block
         get() = source as Block
+
+    abstract override val types: Collection<Class<out BlockSource>>
 
     fun simpleItem(model: ModelFile) {
         provider.simpleBlockItem(block, model)
