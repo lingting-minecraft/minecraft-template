@@ -5,6 +5,7 @@ import live.lingting.minecraft.component.range.FloatRange
 import live.lingting.minecraft.data.BiomeAddFeatureProvider
 import live.lingting.minecraft.data.ConfiguredFeatureProvider
 import live.lingting.minecraft.data.PlacedFeatureProvider
+import live.lingting.minecraft.kt.number
 import live.lingting.minecraft.loot.BlockLootProvider
 import net.minecraft.core.HolderLookup
 import net.minecraft.resources.ResourceKey
@@ -117,7 +118,7 @@ class PanelOreBlock : IBlock {
         override fun generate() {
             val block = getBlock(ID)
             val item = getBlock(PanelNodeBlock.ID)
-            dropNormal(block, item, FloatRange(1f, 9f))
+            dropNormal(block, item, FloatRange(1f, 9f).number)
         }
 
     }

@@ -1,8 +1,8 @@
 package live.lingting.minecraft.loot
 
 import live.lingting.framework.value.WaitValue
-import live.lingting.minecraft.component.range.FloatRange
 import live.lingting.minecraft.data.RegisterData
+import live.lingting.minecraft.kt.number
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
 import net.minecraft.data.loot.BlockLootSubProvider
@@ -19,7 +19,7 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider
 import java.util.function.BiConsumer
 
 /**
@@ -57,7 +57,7 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
     private val cache = mutableMapOf<Block, LootTable.Builder>()
 
     public override fun add(block: Block, builder: LootTable.Builder) {
-        cache.put(block, builder)
+        cache[block] = builder
         super.add(block, builder)
     }
 
@@ -115,28 +115,19 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
     }
 
     fun createSinglePool(item: ItemLike): LootPool.Builder {
+        return createCountPool(item, 1.number)
+    }
+
+    fun createCountPool(item: ItemLike, number: NumberProvider): LootPool.Builder {
         val entry = LootItem.lootTableItem(item)
         return LootPool.lootPool()
             .setRolls(ConstantValue.exactly(1.0F))
+            .apply(SetItemCountFunction.setCount(number))
             .add(entry)
     }
 
-    /**
-     * @param range 全闭区间
-     */
-    fun createRangePool(item: ItemLike, range: FloatRange): LootPool.Builder {
-        val entry = LootItem.lootTableItem(item)
-        return LootPool.lootPool()
-            .setRolls(ConstantValue.exactly(1.0F))
-            .apply(SetItemCountFunction.setCount(UniformGenerator.between(range.first, range.last)))
-            .add(entry)
-    }
-
-    /**
-     * @param range 全闭区间
-     */
-    fun dropOther(block: Block, item: ItemLike, range: FloatRange) {
-        val pool = createRangePool(item, range)
+    fun dropOther(block: Block, item: ItemLike, number: NumberProvider) {
+        val pool = createCountPool(item, number)
         val table = LootTable.lootTable().withPool(pool)
         add(block, table)
     }
@@ -146,7 +137,7 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
      * 精准采集掉落完全复制的自己
      * 非精准采集掉落随机数量的其他物品
      */
-    fun dropNormal(block: Block, item: ItemLike, range: FloatRange) {
+    fun dropNormal(block: Block, item: ItemLike, number: NumberProvider) {
         val table = LootTable.lootTable()
             // 精准采集 - 获取一个自己
             .withPool(
@@ -155,7 +146,7 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
             )
             // 其他工具 - 获取掉落物
             .withPool(
-                createRangePool(item, range)
+                createCountPool(item, number)
                     .`when`(doesNotHaveSilkTouch())
             )
         add(block, table)
