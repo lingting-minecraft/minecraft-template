@@ -2,6 +2,7 @@ package live.lingting.minecraft.command
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
+import live.lingting.minecraft.App.modId
 import live.lingting.minecraft.util.Vec3iUtils.yRange
 import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandBuildContext
@@ -31,8 +32,8 @@ class ScanCommand : BasicCommand() {
             Commands.argument(argName, BlockStateArgument.block(context))
                 .executes { onScan(it, f) }
         }
-        // 异步 从触发人的坐标开始扫描 直到扫描到指定id的方块 或者超出了 范围
-        return Commands.literal("scan")
+        // 这里是为了防止多个使用模板的mod忘记删除示例命令导致命令冲突而添加, 自定义的命令可以不加modId前缀
+        return Commands.literal("${modId}_scan")
             .then(argGet(false))
             .then(
                 Commands.literal("-f")
