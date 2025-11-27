@@ -141,4 +141,24 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
         add(block, table)
     }
 
+    /**
+     * 普通掉落物
+     * 精准采集掉落完全复制的自己
+     * 非精准采集掉落随机数量的其他物品
+     */
+    fun dropNormal(block: Block, item: ItemLike, range: FloatRange) {
+        val table = LootTable.lootTable()
+            // 精准采集 - 获取一个自己
+            .withPool(
+                createSinglePool(block)
+                    .`when`(hasSilkTouch())
+            )
+            // 其他工具 - 获取掉落物
+            .withPool(
+                createRangePool(item, range)
+                    .`when`(doesNotHaveSilkTouch())
+            )
+        add(block, table)
+    }
+
 }

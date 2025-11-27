@@ -23,7 +23,6 @@ import net.minecraft.world.level.levelgen.placement.CountPlacement
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement
 import net.minecraft.world.level.levelgen.placement.InSquarePlacement
 import net.minecraft.world.level.levelgen.placement.PlacedFeature
-import net.minecraft.world.level.storage.loot.LootTable
 
 /**
  * @author lingting 2025/11/22 22:21
@@ -117,15 +116,8 @@ class PanelOreBlock : IBlock {
 
         override fun generate() {
             val block = getBlock(ID)
-            val table = LootTable.lootTable()
-                // 精准采集 - 获取一个自己
-                .withPool(createSinglePool(block).`when`(hasSilkTouch()))
-                // 其他工具 - 获取掉落物
-                .withPool(
-                    createRangePool(getBlock(PanelNodeBlock.ID), FloatRange(1f, 9f))
-                        .`when`(doesNotHaveSilkTouch())
-                )
-            add(block, table)
+            val item = getBlock(PanelNodeBlock.ID)
+            dropNormal(block, item, FloatRange(1f, 9f))
         }
 
     }
