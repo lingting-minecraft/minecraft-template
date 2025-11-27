@@ -5,17 +5,21 @@ import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.kt.number
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.Registries
 import net.minecraft.data.loot.BlockLootSubProvider
 import net.minecraft.resources.ResourceKey
 import net.minecraft.world.flag.FeatureFlagSet
 import net.minecraft.world.flag.FeatureFlags
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.enchantment.Enchantment
+import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.level.ItemLike
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.storage.loot.LootPool
 import net.minecraft.world.level.storage.loot.LootTable
 import net.minecraft.world.level.storage.loot.entries.LootItem
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer
+import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue
@@ -40,6 +44,9 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
     override var registerData: RegisterData
         get() = registerDataValue.notNull()
         set(value) = registerDataValue.update(value)
+
+    protected val enchantment: HolderLookup.RegistryLookup<Enchantment>
+        get() = registries.lookupOrThrow(Registries.ENCHANTMENT)
 
     // region mc
 
@@ -120,9 +127,9 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
 
     fun createCountPool(item: ItemLike, number: NumberProvider): LootPool.Builder {
         val entry = LootItem.lootTableItem(item)
+            .apply(SetItemCountFunction.setCount(number))
         return LootPool.lootPool()
             .setRolls(ConstantValue.exactly(1.0F))
-            .apply(SetItemCountFunction.setCount(number))
             .add(entry)
     }
 
@@ -147,6 +154,44 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
             // 其他工具 - 获取掉落物
             .withPool(
                 createCountPool(item, number)
+                    .`when`(doesNotHaveSilkTouch())
+            )
+        add(block, table)
+    }
+
+    /**
+     * @param number 基础掉落数量
+     * @param magnification 基础倍率, 每级时运增长掉落物数量提高倍数
+     */
+    @JvmOverloads
+    fun createFortunePool(item: ItemLike, number: NumberProvider, magnification: Int = 1): LootPool.Builder {
+        val reference = enchantment.getOrThrow(Enchantments.FORTUNE)
+
+        val entry = LootItem.lootTableItem(item)
+            .apply(SetItemCountFunction.setCount(number))
+            .apply(ApplyBonusCount.addUniformBonusCount(reference, magnification))
+
+        return LootPool.lootPool()
+            .setRolls(ConstantValue.exactly(1.0F))
+            .add(entry)
+    }
+
+    /**
+     * 普通掉落物
+     * 精准采集掉落完全复制的自己
+     * 非精准采集掉落 根据 时运等级掉落随机数量的其他物品
+     */
+    @JvmOverloads
+    fun dropNormalWithFortune(block: Block, item: ItemLike, number: NumberProvider, magnification: Int = 1) {
+        val table = LootTable.lootTable()
+            // 精准采集 - 获取一个自己
+            .withPool(
+                createSinglePool(block)
+                    .`when`(hasSilkTouch())
+            )
+            // 其他工具 - 获取掉落物
+            .withPool(
+                createFortunePool(item, number, magnification)
                     .`when`(doesNotHaveSilkTouch())
             )
         add(block, table)
