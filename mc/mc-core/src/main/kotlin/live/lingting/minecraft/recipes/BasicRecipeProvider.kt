@@ -61,15 +61,34 @@ abstract class BasicRecipeProvider : BasicDataProvider {
     }
 
     protected fun slabBuilder(category: RecipeCategory, slab: ItemLike, material: Ingredient): RecipeBuilder {
-        return ShapedRecipeBuilder.shaped(category, slab, 6).define('#', material).pattern("###")
+        return ShapedRecipeBuilder.shaped(category, slab, 6)
+            .define('#', material)
+            .pattern("###")
     }
 
     /**
      * 用 source 合成 target. 使用台阶合成方案
      */
-    fun slabBlock(source: ItemLike, target: ItemLike): RecipeBuilder {
+    protected fun slabBlock(source: ItemLike, target: ItemLike): RecipeBuilder {
         val ingredient = Ingredient.of(source)
         return slabBuilder(RecipeCategory.BUILDING_BLOCKS, target, ingredient)
+            .unlockedBy("has_source", has(source))
+    }
+
+    protected fun stairsBuilder(category: RecipeCategory, stairs: ItemLike, material: Ingredient): RecipeBuilder {
+        return ShapedRecipeBuilder.shaped(category, stairs, 4)
+            .define('#', material)
+            .pattern("#  ")
+            .pattern("## ")
+            .pattern("###")
+    }
+
+    /**
+     * 用 source 合成 target. 使用楼梯合成方案
+     */
+    protected fun stairsBlock(source: ItemLike, target: ItemLike): RecipeBuilder {
+        val ingredient = Ingredient.of(source)
+        return stairsBuilder(RecipeCategory.BUILDING_BLOCKS, target, ingredient)
             .unlockedBy("has_source", has(source))
     }
 

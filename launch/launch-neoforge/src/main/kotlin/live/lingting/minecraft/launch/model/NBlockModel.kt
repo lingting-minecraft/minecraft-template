@@ -6,8 +6,10 @@ import live.lingting.minecraft.launch.provider.ModelProvider
 import live.lingting.minecraft.textures.TexturesItem
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.SlabBlock
+import net.minecraft.world.level.block.StairBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.SlabType
+import net.minecraft.world.level.block.state.properties.StairsShape
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel
 import net.neoforged.neoforge.client.model.generators.ModelFile
@@ -92,6 +94,25 @@ abstract class NBlockModel : NModel() {
             }
         }
         simpleItem(bottomModel)
+    }
+
+    @JvmOverloads
+    fun stair(side: TexturesItem, top: TexturesItem = side, bottom: TexturesItem = side, suffix: String? = null) {
+        val name = if (suffix.isNullOrBlank()) id else "${id}_$suffix"
+        val straightModel = models.stairs("${name}_straight", side.location, bottom.location, top.location)
+        val innerModel = models.stairsInner("${name}_inner", side.location, bottom.location, top.location)
+        val outerModel = models.stairsInner("${name}_outer", side.location, bottom.location, top.location)
+        forAllStatesByModel {
+            val shape = it.getValue(StairBlock.SHAPE)
+            when (shape) {
+                StairsShape.STRAIGHT -> straightModel
+                StairsShape.INNER_LEFT -> innerModel
+                StairsShape.INNER_RIGHT -> innerModel
+                StairsShape.OUTER_LEFT -> outerModel
+                StairsShape.OUTER_RIGHT -> outerModel
+            }
+        }
+        simpleItem(straightModel)
     }
 
 }

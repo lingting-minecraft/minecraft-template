@@ -1,5 +1,6 @@
 package live.lingting.minecraft.recipes
 
+import live.lingting.framework.util.DigestUtils
 import live.lingting.minecraft.kt.location
 import net.minecraft.data.recipes.RecipeBuilder
 import net.minecraft.data.recipes.RecipeOutput
@@ -9,7 +10,7 @@ import net.minecraft.data.recipes.RecipeOutput
  */
 abstract class ArrayRecipeProvider : BasicRecipeProvider {
 
-    open val prefix = javaClass.name.hashCode().toString()
+    open val prefix = DigestUtils.md5Hex(javaClass.name)
 
     constructor() : super()
 
