@@ -92,4 +92,20 @@ abstract class BasicRecipeProvider : BasicDataProvider {
             .unlockedBy("has_source", has(source))
     }
 
+    protected fun wallBuilder(category: RecipeCategory, wall: ItemLike, material: Ingredient): RecipeBuilder {
+        return ShapedRecipeBuilder.shaped(category, wall, 6)
+            .define('#', material)
+            .pattern("###")
+            .pattern("###")
+    }
+
+    /**
+     * 用 source 合成 target. 使用楼梯合成方案
+     */
+    protected fun wallBlock(source: ItemLike, target: ItemLike): RecipeBuilder {
+        val ingredient = Ingredient.of(source)
+        return wallBuilder(RecipeCategory.BUILDING_BLOCKS, target, ingredient)
+            .unlockedBy("has_source", has(source))
+    }
+
 }

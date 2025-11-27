@@ -19,7 +19,7 @@ abstract class NModel {
     val id
         get() = source.id
 
-    abstract val types: List<Class<out IWorld>>
+    abstract val types: Collection<Class<out IWorld>>
 
     abstract fun register()
 

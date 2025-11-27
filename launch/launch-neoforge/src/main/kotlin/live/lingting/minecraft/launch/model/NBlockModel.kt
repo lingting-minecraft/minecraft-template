@@ -7,9 +7,11 @@ import live.lingting.minecraft.textures.TexturesItem
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.SlabBlock
 import net.minecraft.world.level.block.StairBlock
+import net.minecraft.world.level.block.WallBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.SlabType
 import net.minecraft.world.level.block.state.properties.StairsShape
+import net.minecraft.world.level.block.state.properties.WallSide
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel
 import net.neoforged.neoforge.client.model.generators.ModelFile
@@ -113,6 +115,38 @@ abstract class NBlockModel : NModel() {
             }
         }
         simpleItem(straightModel)
+    }
+
+    @JvmOverloads
+    fun wall(wall: TexturesItem, particle: TexturesItem = wall, suffix: String? = null) {
+        val name = if (suffix.isNullOrBlank()) id else "${id}_$suffix"
+        val particleKey = "particle"
+        val inventoryModel = models.wallInventory("${name}_inventory", wall.location)
+            .texture(particleKey, particle.location)
+        val postModel = models.wallPost("${name}_post", wall.location)
+            .texture(particleKey, particle.location)
+        val sideModel = models.wallSide("${name}_side", wall.location)
+            .texture(particleKey, particle.location)
+        val tallModel = models.wallSideTall("${name}_tall", wall.location)
+            .texture(particleKey, particle.location)
+        forAllStatesByModel {
+            val east = it.getValue(WallBlock.EAST_WALL)
+            val north = it.getValue(WallBlock.NORTH_WALL)
+            val south = it.getValue(WallBlock.SOUTH_WALL)
+            val west = it.getValue(WallBlock.WEST_WALL)
+
+            val isLow = east == WallSide.LOW || north == WallSide.LOW || south == WallSide.LOW || west == WallSide.LOW
+            val isTall =
+                east == WallSide.TALL || north == WallSide.TALL || south == WallSide.TALL || west == WallSide.TALL
+            if (isTall) {
+                tallModel
+            } else if (isLow) {
+                sideModel
+            } else {
+                postModel
+            }
+        }
+        simpleItem(inventoryModel)
     }
 
 }
