@@ -3,7 +3,7 @@ package live.lingting.minecraft.launch.provider
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isAbstract
 import live.lingting.minecraft.App.modId
-import live.lingting.minecraft.block.IBlock
+import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.launch.NeoForgeLaunch
 import live.lingting.minecraft.launch.model.NBlockModel
@@ -84,7 +84,7 @@ object ModelProvider {
         }
 
         fun register(blockDef: DeferredBlock<Block>) {
-            val block = blockDef.get() as IBlock
+            val block = blockDef.get() as BlockSource
             models.filter { m ->
                 m.types.any { ClassUtils.isSuper(block.javaClass, it) }
             }.forEach {

@@ -10,6 +10,6 @@ class TexturesItem(val key: String, val name: String) {
 
     val path = "$key/$name"
 
-    val location: ResourceLocation = ResourceLocation.fromNamespaceAndPath(App.modId, path)
+    val location: ResourceLocation by lazy { ResourceLocation.fromNamespaceAndPath(App.modId, path) }
 
 }

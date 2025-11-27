@@ -3,6 +3,7 @@ package live.lingting.minecraft.launch.provider
 import live.lingting.minecraft.App.modId
 import live.lingting.minecraft.data.RegisterData
 import net.minecraft.core.HolderLookup
+import net.minecraft.world.level.block.Block
 import net.neoforged.neoforge.common.data.BlockTagsProvider
 import net.neoforged.neoforge.data.event.GatherDataEvent
 
@@ -23,11 +24,11 @@ class BlockTagsProvider(
     }
 
     override fun addTags(provider: HolderLookup.Provider) {
-        registerData.iBlocks.forEach {
+        registerData.blockSource.forEach {
             val tags = it.tags
             if (!tags.isNullOrEmpty()) {
                 for (key in tags) {
-                    tag(key).add(it)
+                    tag(key).add(it as Block)
                 }
             }
         }

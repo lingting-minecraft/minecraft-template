@@ -14,7 +14,7 @@ class PanelOreBlockModel : NBlockModel() {
 
     override fun register() {
         val model = cubeAll(Textures.BLOCK_PANEL_ORE)
-        forAllStatesByModel { model }
+        forAllStates(model)
         simpleItem(model)
     }
 

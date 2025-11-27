@@ -4,6 +4,7 @@ import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.eunums.ClickBlockResult
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
+import live.lingting.minecraft.item.ItemSource
 import live.lingting.minecraft.listener.LeftClickListener
 import live.lingting.minecraft.util.PlayerUtils.isClientSide
 import live.lingting.minecraft.util.UseOnContextUtils.isClientSide
@@ -25,7 +26,7 @@ class PanelItem : IItem, LeftClickListener {
     companion object {
 
         @JvmField
-        val ID = id("panel")
+        val ID = ItemSource.id("panel")
 
     }
 

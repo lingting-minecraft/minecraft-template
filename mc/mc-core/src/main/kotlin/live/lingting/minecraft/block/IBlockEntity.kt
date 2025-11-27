@@ -79,14 +79,14 @@ abstract class IBlockEntity : BlockEntity {
         fun entityName(cls: Class<out IBlockEntity>) = cls.name.lowercase().replace(".", "_")
 
         @JvmStatic
-        fun registerMapping(map: Map<Class<out IBlock>, Class<out IBlockEntity>>) {
+        fun registerMapping(map: Map<Class<out BlockSource>, Class<out IBlockEntity>>) {
             map.forEach { (b, e) ->
                 registerMapping(b, e)
             }
         }
 
         @JvmStatic
-        fun registerMapping(b: Class<out IBlock>, e: Class<out IBlockEntity>) {
+        fun registerMapping(b: Class<out BlockSource>, e: Class<out IBlockEntity>) {
             MAPPING[b.name] = entityName(e)
         }
 
@@ -102,7 +102,7 @@ abstract class IBlockEntity : BlockEntity {
         }
 
         @JvmStatic
-        fun findByBlock(cls: Class<out IBlock>): Holder<*>? {
+        fun findByBlock(cls: Class<out BlockSource>): Holder<*>? {
             val name = MAPPING[cls.name]
             if (name.isNullOrBlank()) {
                 return null

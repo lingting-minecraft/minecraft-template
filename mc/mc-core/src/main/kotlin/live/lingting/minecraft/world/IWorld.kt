@@ -39,6 +39,7 @@ interface IWorld {
     }
 
     val id: String
+        get() = id(javaClass)!!
 
     val creativeTab: CreativeTabs
         get() = CreativeTabs.MAIN

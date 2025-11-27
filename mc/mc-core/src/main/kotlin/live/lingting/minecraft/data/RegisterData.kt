@@ -1,6 +1,6 @@
 package live.lingting.minecraft.data
 
-import live.lingting.minecraft.block.IBlock
+import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.component.kt.isSuper
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.world.item.Item
@@ -58,10 +58,10 @@ class RegisterData(
 
     fun getBlock(id: String): Block = findBlock(id)!!
 
-    val iBlocks by lazy {
+    val blockSource by lazy {
         blocks.mapNotNull {
-            if (it.isSuper(IBlock::class)) {
-                it as IBlock
+            if (it.isSuper(BlockSource::class)) {
+                it as BlockSource
             } else {
                 null
             }

@@ -197,4 +197,8 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
         add(block, table)
     }
 
+    fun dropSlabItemTable(block: Block) {
+        add(block, createSlabItemTable(block))
+    }
+
 }

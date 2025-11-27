@@ -5,13 +5,13 @@ import live.lingting.framework.util.ClassUtils.isAbstract
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.WaitValue
-import live.lingting.minecraft.App
-import live.lingting.minecraft.block.IBlock
+import live.lingting.minecraft.App.modId
+import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.command.BasicCommand
 import live.lingting.minecraft.data.BasicDataProvider
 import live.lingting.minecraft.data.RegisterData
-import live.lingting.minecraft.item.IItem
+import live.lingting.minecraft.item.ItemSource
 import live.lingting.minecraft.world.IWorld
 import net.minecraft.data.DataProvider
 import net.minecraft.world.item.Item
@@ -55,19 +55,19 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
     val registerData: RegisterData
         get() = registerDataValue.notNull()
 
-    protected open fun isIWorld(cls: Class<*>): Boolean {
+    protected open fun isWorld(cls: Class<*>): Boolean {
         return isSuper(cls, IWorld::class.java)
     }
 
-    protected open fun isIItem(cls: Class<*>): Boolean {
-        return isSuper(cls, IItem::class.java)
+    protected open fun isItem(cls: Class<*>): Boolean {
+        return isSuper(cls, ItemSource::class.java)
     }
 
-    protected open fun isIBlock(cls: Class<*>): Boolean {
-        return isSuper(cls, IBlock::class.java)
+    protected open fun isBlock(cls: Class<*>): Boolean {
+        return isSuper(cls, BlockSource::class.java)
     }
 
-    protected open fun isIBlockEntity(cls: Class<*>): Boolean {
+    protected open fun isBlockEntity(cls: Class<*>): Boolean {
         return isSuper(cls, IBlockEntity::class.java)
     }
 
@@ -79,7 +79,7 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
     protected open fun isCommand(cls: Class<*>) = isSuper(cls, BasicCommand::class.java)
 
     protected open fun onInitializer() {
-        log.debug("[{}] onInitializer", App.modId)
+        log.debug("[{}] onInitializer", modId)
         val loaders = ClassUtils.classLoaders(javaClass.classLoader)
         val classes = packages.flatMap { p ->
             ClassUtils.scan<Any>(p, {
@@ -88,22 +88,22 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                 } else if (it.packageName.startsWith(javaClass.packageName)) {
                     false
                 } else {
-                    isIWorld(it) || isIBlockEntity(it) || isDataProvider(it) || isCommand(it)
+                    isWorld(it) || isBlockEntity(it) || isDataProvider(it) || isCommand(it)
                 }
             }, loaders)
         }.sortedBy { it.name.reversed() }
 
-        log.debug("[{}] 扫描到待加载类数量: {}", App.modId, classes.size)
+        log.debug("[{}] 扫描到待加载类数量: {}", modId, classes.size)
         val items = mutableListOf<I>()
         val blocks = mutableListOf<B>()
         val blockItems = mutableListOf<BI>()
-        val blockEntityTypeMap = mutableMapOf<Class<out IBlock>, Class<out IBlockEntity>>()
+        val blockEntityTypeMap = mutableMapOf<Class<out BlockSource>, Class<out IBlockEntity>>()
         val blockEntityMap = mutableMapOf<Class<out IBlockEntity>, MutableList<B>>()
         val dataProviderClasses = mutableListOf<Class<out Any>>()
         val commandClasses = mutableListOf<Class<out BasicCommand>>()
 
         classes.forEach { c ->
-            if (isIBlockEntity(c)) {
+            if (isBlockEntity(c)) {
                 val cls = c as Class<IBlockEntity>
                 val types = IBlockEntity.types(cls).filter { !it.isAbstract && !it.isInterface }
                 types.forEach {
@@ -119,7 +119,7 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
         }
 
         classes.forEach { c ->
-            if (!isIWorld(c)) {
+            if (!isWorld(c)) {
                 return@forEach
             }
             val id = IWorld.id(c as Class<IWorld>, log)
@@ -127,14 +127,21 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                 return@forEach
             }
 
-            log.debug("[{}] 类[{}]读取到id: {}", App.modId, c.name, id)
-            if (isIItem(c)) {
-                registerItem(id, c, items)
+            log.debug("[{}] 类[{}]读取到id: {}", modId, c.name, id)
+            if (isItem(c)) {
+                log.debug("[{}] 注册物品: {}", modId, id)
+                val p = registerItem(id, c as Class<ItemSource>)
+                if (p != null) {
+                    items.add(p)
+                    if (id == baseItemId && !::baseItem.isInitialized) {
+                        baseItem = p
+                    }
+                }
             }
 
-            if (isIBlock(c)) {
-                log.debug("[{}] 注册方块: {}", App.modId, id)
-                val cls = c as Class<IBlock>
+            if (isBlock(c)) {
+                log.debug("[{}] 注册方块: {}", modId, id)
+                val cls = c as Class<BlockSource>
                 val p = registerBlock(id, cls)
                 if (p != null) {
                     val (block, item) = p
@@ -161,25 +168,11 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
         registerBlockEntity(blockEntityMap)
     }
 
-    private fun registerItem(id: String, cls: Class<IWorld>, items: MutableList<I>) {
-        log.debug("[{}] 注册物品: {}", App.modId, id)
-        if (!id.startsWith(IItem.PREFIX)) {
-            throw IllegalArgumentException("物品id必须以[${IItem.PREFIX}]作为前缀")
-        }
-        val item = registerItem(id, cls as Class<IItem>)
-        if (item != null) {
-            items.add(item)
-            if (id == baseItemId && !::baseItem.isInitialized) {
-                baseItem = item
-            }
-        }
-    }
+    protected abstract fun registerItem(id: String, c: Class<out ItemSource>): I?
 
-    protected abstract fun registerItem(id: String, c: Class<out IItem>): I?
+    protected abstract fun registerBlock(id: String, c: Class<out BlockSource>): Pair<B, BI>?
 
-    protected abstract fun registerBlock(id: String, c: Class<out IBlock>): Pair<B, BI>?
-
-    protected abstract fun registerBlockEntityMapping(map: Map<Class<out IBlock>, Class<out IBlockEntity>>)
+    protected abstract fun registerBlockEntityMapping(map: Map<Class<out BlockSource>, Class<out IBlockEntity>>)
 
     protected abstract fun registerBlockEntity(map: Map<Class<out IBlockEntity>, List<B>>)
 

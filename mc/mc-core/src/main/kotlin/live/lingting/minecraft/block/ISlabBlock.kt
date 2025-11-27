@@ -6,13 +6,13 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
-import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SlabBlock
 import net.minecraft.world.level.block.state.BlockState
 
 /**
- * @author lingting 2025/11/4 19:46
+ * @author lingting 2025/11/27 15:04
  */
-abstract class IBlock : Block, BlockSource, IWorld {
+abstract class ISlabBlock : SlabBlock, BlockSource, IWorld {
 
     constructor(p: Properties) : super(p)
 

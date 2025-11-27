@@ -1,5 +1,6 @@
 package live.lingting.minecraft
 
+import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.eunums.ActiveEnum
 import live.lingting.minecraft.i18n.I18n
@@ -8,7 +9,6 @@ import live.lingting.minecraft.recipes.ArrayRecipeProvider
 import net.minecraft.ChatFormatting
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
-import net.minecraft.data.PackOutput
 import net.minecraft.data.recipes.RecipeBuilder
 import net.minecraft.data.recipes.RecipeCategory
 import net.minecraft.data.recipes.ShapelessRecipeBuilder
@@ -20,7 +20,6 @@ import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
-import java.util.concurrent.CompletableFuture
 
 /**
  * @author lingting 2025/11/6 19:05
@@ -30,7 +29,7 @@ class PanelNodeBlock : IBlock {
     companion object {
 
         @JvmField
-        val ID = id("panel.node")
+        val ID = BlockSource.id("panel.node")
 
     }
 

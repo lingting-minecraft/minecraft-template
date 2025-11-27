@@ -1,5 +1,6 @@
 package live.lingting.minecraft
 
+import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlock
 import live.lingting.minecraft.component.range.FloatRange
 import live.lingting.minecraft.data.BiomeAddFeatureProvider
@@ -33,7 +34,7 @@ class PanelOreBlock : IBlock {
     companion object {
 
         @JvmField
-        val ID = id("panel.ore")
+        val ID = BlockSource.id("panel.ore")
 
     }
 
@@ -45,7 +46,7 @@ class PanelOreBlock : IBlock {
             .sound(SoundType.STONE)
             // 基础挖掘耗时: 秒, 爆炸抗性
             .strength(2f, 3f)
-            // 矿石设置不同状态时不同的亮度, 这里统一
+            // 设置不同状态时不同的亮度, 这里统一
             .lightLevel {
                 13
             }

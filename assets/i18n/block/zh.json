@@ -2,5 +2,6 @@
   "panel.node": "面板节点",
   "panel.node.hover": "面板节点浮窗, 计数: %d",
   "panel.node.counter.increment": "面板节点计数变更为: %d",
+  "panel.node.slab": "面板节点台阶",
   "panel.ore": "面板矿石"
 }
