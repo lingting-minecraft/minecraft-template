@@ -1,4 +1,4 @@
-package live.lingting.minecraft
+package live.lingting.minecraft.template
 
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.eunums.ClickBlockResult

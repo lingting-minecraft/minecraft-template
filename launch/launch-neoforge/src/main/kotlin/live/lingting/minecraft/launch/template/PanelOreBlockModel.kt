@@ -1,8 +1,8 @@
-package live.lingting.minecraft.launch.block
+package live.lingting.minecraft.launch.template
 
-import live.lingting.minecraft.PanelOreBlock
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.launch.model.NBlockModel
+import live.lingting.minecraft.template.PanelOreBlock
 import live.lingting.minecraft.textures.Textures
 
 /**

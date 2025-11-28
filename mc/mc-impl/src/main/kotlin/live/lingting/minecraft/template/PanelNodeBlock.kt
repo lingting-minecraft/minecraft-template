@@ -1,4 +1,4 @@
-package live.lingting.minecraft
+package live.lingting.minecraft.template
 
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlock

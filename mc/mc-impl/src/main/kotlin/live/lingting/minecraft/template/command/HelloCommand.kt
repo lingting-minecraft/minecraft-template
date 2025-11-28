@@ -1,7 +1,8 @@
-package live.lingting.minecraft.command
+package live.lingting.minecraft.template.command
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import live.lingting.minecraft.App.modId
+import live.lingting.minecraft.command.BasicCommand
 import live.lingting.minecraft.i18n.I18n
 import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandBuildContext

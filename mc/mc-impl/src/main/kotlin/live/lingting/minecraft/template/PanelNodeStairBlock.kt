@@ -1,8 +1,8 @@
-package live.lingting.minecraft
+package live.lingting.minecraft.template
 
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.BlockStatePredicates.ALWAY_TRUE
-import live.lingting.minecraft.block.ISlabBlock
+import live.lingting.minecraft.block.IStairBlock
 import live.lingting.minecraft.loot.BlockLootProvider
 import live.lingting.minecraft.recipes.ArrayRecipeProvider
 import net.minecraft.core.HolderLookup
@@ -14,15 +14,14 @@ import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument
 
 /**
- * 台阶方块
- * @author lingting 2025/11/27 15:07
+ * @author lingting 2025/11/27 16:58
  */
-class PanelNodeSlabBlock : ISlabBlock {
+class PanelNodeStairBlock : IStairBlock {
 
     companion object {
 
         @JvmField
-        val ID = BlockSource.id("panel.node.slab")
+        val ID = BlockSource.id("panel.node.stair")
 
     }
 
@@ -57,7 +56,7 @@ class PanelNodeSlabBlock : ISlabBlock {
 
         override fun generate() {
             val block = getBlock(ID)
-            dropSlabItemTable(block)
+            dropSelf(block)
         }
 
     }
@@ -68,10 +67,9 @@ class PanelNodeSlabBlock : ISlabBlock {
             val block = getBlock(ID)
             val source = getBlock(PanelNodeBlock.ID)
             return buildList {
-                add(slabBlock(source, block))
+                add(stairsBlock(source, block))
             }
         }
 
     }
-
 }

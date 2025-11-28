@@ -1,8 +1,8 @@
-package live.lingting.minecraft.launch.item
+package live.lingting.minecraft.launch.template
 
-import live.lingting.minecraft.PanelItem
 import live.lingting.minecraft.item.ItemSource
 import live.lingting.minecraft.launch.model.NItemModel
+import live.lingting.minecraft.template.PanelItem
 import live.lingting.minecraft.textures.Textures
 
 class PanelItemModel : NItemModel() {

@@ -118,6 +118,7 @@ tasks.shadowJar {
         exclude("META-INF/*LICENSE*")
         exclude("META-INF/*NOTICE*")
         exclude("module-info.class")
+        exclude("package-info.class")
         exclude("META-INF/versions/**")
     }
 
