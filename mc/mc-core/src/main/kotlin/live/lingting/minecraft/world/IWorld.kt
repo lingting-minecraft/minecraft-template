@@ -4,7 +4,6 @@ import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.FieldUtils.isStatic
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.minecraft.App
-import live.lingting.minecraft.eunums.CreativeTabs
 import live.lingting.minecraft.i18n.I18nLocale
 import org.slf4j.Logger
 import kotlin.reflect.KClass
@@ -41,8 +40,12 @@ interface IWorld {
     val id: String
         get() = id(javaClass)!!
 
-    val creativeTab: CreativeTabs
-        get() = CreativeTabs.MAIN
+    /**
+     * 所属创造模式 物品栏 选项卡,未设置则使用配置的首个选项卡.
+     * 如何找不到或者没有配置的选项卡, 则不处理
+     */
+    val creativeTabId: String?
+        get() = null
 
     /**
      * 物品名称, 但是在代码里面是 desc

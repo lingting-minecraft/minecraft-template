@@ -6,6 +6,7 @@ import live.lingting.framework.util.ClassUtils.isAbstract
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.WaitValue
+import live.lingting.minecraft.App
 import live.lingting.minecraft.App.modId
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlockEntity
@@ -36,12 +37,6 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
         get() = !isClient
 
     open val packages: List<String> = listOf(javaClass.packageName.split(".").dropLast(2).joinToString("."))
-
-    lateinit var baseItem: I
-    lateinit var baseBlock: B
-
-    abstract val baseItemId: String
-    abstract val baseBlockId: String
 
     var registerItems = listOf<I>()
         private set
@@ -154,9 +149,6 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                 val p = registerItem(id, c as Class<ItemSource>)
                 if (p != null) {
                     items.add(p)
-                    if (id == baseItemId && !::baseItem.isInitialized) {
-                        baseItem = p
-                    }
                 }
             }
 
@@ -168,9 +160,6 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                     val (block, item) = p
                     blocks.add(block)
                     blockItems.add(item)
-                    if (id == baseBlockId && !::baseBlock.isInitialized) {
-                        baseBlock = block
-                    }
                     val clz = blockEntityTypeMap[cls]
                     if (clz != null) {
                         blockEntityMap.computeIfAbsent(clz) { mutableListOf() }
@@ -182,7 +171,9 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
         registerItems = items
         registerBlocks = blocks
         registerBlockItems = blockItems
-        registerDataValue.update(RegisterData.from(registerItems, registerBlocks))
+        val data = RegisterData.from(registerItems, registerBlocks)
+        registerDataValue.update(data)
+        App.registerData = data
         this.dataProviderClasses = dataProviderClasses
         this.commandClasses = commandClasses
         registerBlockEntityMapping(blockEntityTypeMap)

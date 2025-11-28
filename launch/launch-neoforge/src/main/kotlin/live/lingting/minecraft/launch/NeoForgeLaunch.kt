@@ -3,14 +3,11 @@ package live.lingting.minecraft.launch
 import com.mojang.serialization.MapCodec
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.App.modId
-import live.lingting.minecraft.PanelItem
-import live.lingting.minecraft.PanelNodeBlock
+import live.lingting.minecraft.CreativeTabs
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.component.kt.isSuper
 import live.lingting.minecraft.data.BasicFeatureProvider
-import live.lingting.minecraft.eunums.CreativeTabs
-import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.ItemSource
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
 import live.lingting.minecraft.launch.bus.NeoForgeCommand
@@ -30,6 +27,7 @@ import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
+import net.minecraft.world.level.ItemLike
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider
@@ -45,7 +43,6 @@ import net.neoforged.neoforge.registries.DeferredBlock
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredItem
 import net.neoforged.neoforge.registries.DeferredRegister
-import java.util.EnumMap
 import java.util.function.Supplier
 
 /**
@@ -63,17 +60,14 @@ class NeoForgeLaunch(
     override val isClient: Boolean
         get() = type == Dist.CLIENT
 
-    override val baseItemId: String by lazy { PanelItem.ID }
-
-    override val baseBlockId: String by lazy { PanelNodeBlock.ID }
-
     val items = DeferredRegister.createItems(modId)
 
     val blocks = DeferredRegister.createBlocks(modId)
 
     val blockEntityTypes = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, modId)
 
-    val tabMap = EnumMap<CreativeTabs, DeferredHolder<CreativeModeTab, CreativeModeTab>>(CreativeTabs::class.java)
+    val tabMap =
+        LinkedHashMap<CreativeTabs, DeferredHolder<CreativeModeTab, CreativeModeTab>>(CreativeTabs.entries.size)
 
     val numberProvider = DeferredRegister.create(Registries.LOOT_NUMBER_PROVIDER_TYPE, modId)
 
@@ -88,9 +82,9 @@ class NeoForgeLaunch(
         CreativeTabs.entries.forEach {
             val tab = tabCreate.register(it.id, Supplier {
                 CreativeModeTab.builder()
-                    .title(I18n.MOD_TITLE.translatable())
+                    .title(it.i18n.translatable())
                     .withTabsBefore(CreativeModeTabs.COMBAT)
-                    .icon { baseItem.get().defaultInstance }
+                    .icon(it.icon)
                     .build()
             })
             tabMap[it] = tab
@@ -143,24 +137,31 @@ class NeoForgeLaunch(
 
     fun onTab(e: BuildCreativeModeTabContentsEvent) {
         log.debug("[{}] register tab: {}", modId, e.tabKey)
+        if (tabMap.isEmpty()) {
+            return
+        }
+        val keys = tabMap.keys
+        val first = keys.first()
+        val onIWorld = { i: IWorld ->
+            val tabId = i.creativeTabId
+            val key = keys.firstOrNull { tabId.isNullOrBlank() || it.id == tabId } ?: first
+            val tab = tabMap[key]
+            if (tab?.key == e.tabKey) {
+                e.accept(i as ItemLike)
+            }
+        }
 
         registerBlockItems.forEach {
             val block = it.get().block
             if (block.isSuper(IWorld::class)) {
-                val tab = tabMap[(block as IWorld).creativeTab]
-                if (tab?.key == e.tabKey) {
-                    e.accept(it)
-                }
+                onIWorld(block as IWorld)
             }
         }
 
         registerItems.forEach {
             val item = it.get()
             if (item.isSuper(IWorld::class)) {
-                val tab = tabMap[(item as IWorld).creativeTab]
-                if (tab?.key == e.tabKey) {
-                    e.accept(it)
-                }
+                onIWorld(item as IWorld)
             }
         }
 
