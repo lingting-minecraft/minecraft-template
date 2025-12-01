@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Tier
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.enchantment.Enchantments
+import kotlin.math.max
 
 /**
  * @author lingting 2025/11/29 15:07
@@ -50,6 +51,21 @@ abstract class IMeleeWeaponsItem : IWeaponsItem {
     ): Double {
         val i = stack.getEnchantmentLevel(holder, Enchantments.SHARPNESS) ?: 0
         return basic * i * 0.5
+    }
+
+    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+        val level = attacker.level()
+        if (level.isClientSide) return true
+        // 攻击伤害, 最小值是0
+        val damage = max(0.0, getDamage(stack, level, target, attacker)).toFloat()
+        // 无来源时, 使用通用来源
+        val source = attacker.lastDamageSource ?: level.damageSources().generic()
+        val hurt = target.hurt(source, damage)
+        if (hurt && damage > 0) {
+            // 扣减一点耐久
+            durabilityChange(stack, -1, attacker)
+        }
+        return true
     }
 
 }

@@ -21,7 +21,12 @@ class EnergyWeaponsItem : IEnergyWeaponsItem {
 
     }
 
-    constructor(p: Properties) : super(EnergyWeaponsItem::class.java, WeaponsData(6.0, 1.5), 12, p)
+    constructor(p: Properties) : super(
+        EnergyWeaponsItem::class.java,
+        WeaponsData(6.0, 1.0, 7.0, penetrationNumber = 3),
+        12,
+        p
+    )
 
     override fun appendHoverText(
         stack: ItemStack,
@@ -33,8 +38,8 @@ class EnergyWeaponsItem : IEnergyWeaponsItem {
         val holder = tooltip.registries()
         val basic = getBasicDamage(stack, holder)
         val additional = getAdditionalDamage(stack, basic, holder)
-        components.add(I18n.ITEM.MELEE_WEAPONS_HOVER_DAMAGE.translatable(basic))
-        components.add(I18n.ITEM.MELEE_WEAPONS_HOVER_DAMAGE_ADDITIONAL.translatable(additional))
+        components.add(I18n.ITEM.WEAPONS_HOVER_DAMAGE.translatable(basic))
+        components.add(I18n.ITEM.WEAPONS_HOVER_DAMAGE_ADDITIONAL.translatable(additional))
     }
 
 }

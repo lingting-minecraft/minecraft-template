@@ -20,7 +20,6 @@ import net.minecraft.world.item.Tier
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
-import kotlin.math.max
 
 /**
  * 武器基类
@@ -145,50 +144,7 @@ abstract class IWeaponsItem : IItem, ClickListener {
         return 0.0
     }
 
-    // region hurt
-
-    /**
-     * 应该仅在服务端触发, 用于武器自定义攻击行为时触发
-     * - 计算攻击伤害
-     * - 触发攻击效果
-     * - 有效攻击时扣减耐久
-     */
-    @JvmOverloads
-    open fun onHurt(
-        stack: ItemStack,
-        level: Level,
-        target: LivingEntity? = null,
-        attacker: LivingEntity? = null
-    ) {
-        if (level.isClientSide) return
-        // 攻击伤害, 最小值是0
-        val damage = max(0.0, getDamage(stack, level, target, attacker)).toFloat()
-        // 无来源时, 使用通用来源
-        val source = attacker?.lastDamageSource ?: level.damageSources().generic()
-        val hurt = target?.hurt(source, damage) ?: false
-        log.debug("当前血量: {}; 当前伤害: {}", target?.health, damage)
-        onHurtAfter(stack, level, hurt, damage, target, attacker)
-    }
-
-    /**
-     * 攻击完后触发
-     * @param hurt 是否攻击到目标
-     * @param damage 造成的伤害
-     */
-    open fun onHurtAfter(
-        stack: ItemStack,
-        level: Level,
-        hurt: Boolean,
-        damage: Float,
-        target: LivingEntity? = null,
-        attacker: LivingEntity? = null
-    ) {
-        // 仅在造成有效伤害时扣减耐久
-        if (hurt && damage > 0) {
-            // 扣减一点耐久
-            durabilityChange(stack, -1, attacker)
-        }
-    }
+    // region listener
 
     override fun onLeftClickEntity(player: Player, stack: ItemStack, target: Entity): AttackResult {
         val durability = getDurability(stack, target as? LivingEntity, player)
@@ -203,8 +159,6 @@ abstract class IWeaponsItem : IItem, ClickListener {
     // region mc
 
     override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
-        val level = attacker.level()
-        onHurt(stack, level, target, attacker)
         return true
     }
 

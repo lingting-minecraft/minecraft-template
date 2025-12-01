@@ -33,8 +33,8 @@ class MeleeWeaponsItem : IMeleeWeaponsItem {
         val holder = tooltip.registries()
         val basic = getBasicDamage(stack, holder)
         val additional = getAdditionalDamage(stack, basic, holder)
-        components.add(I18n.ITEM.MELEE_WEAPONS_HOVER_DAMAGE.translatable(basic))
-        components.add(I18n.ITEM.MELEE_WEAPONS_HOVER_DAMAGE_ADDITIONAL.translatable(additional))
+        components.add(I18n.ITEM.WEAPONS_HOVER_DAMAGE.translatable(basic))
+        components.add(I18n.ITEM.WEAPONS_HOVER_DAMAGE_ADDITIONAL.translatable(additional))
     }
 
 }

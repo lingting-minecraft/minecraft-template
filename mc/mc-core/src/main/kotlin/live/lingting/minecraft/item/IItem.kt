@@ -4,12 +4,16 @@ import live.lingting.minecraft.world.IWorld
 import net.minecraft.advancements.CriteriaTriggers
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.level.Level
 
 /**
  * @author lingting 2025/11/6 19:23
@@ -55,6 +59,10 @@ abstract class IItem : Item, ItemSource, IWorld {
         components: MutableList<Component?>,
         flag: TooltipFlag
     ) {
+    }
+
+    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+        return super.use(level, player, hand)
     }
 
     override fun useOn(context: UseOnContext): InteractionResult {
