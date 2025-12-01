@@ -1,22 +1,28 @@
 package live.lingting.minecraft.launch
 
+import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isAbstract
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.value.WaitValue
 import live.lingting.minecraft.App
 import live.lingting.minecraft.App.modId
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.command.BasicCommand
+import live.lingting.minecraft.data.BasicComponentData
 import live.lingting.minecraft.data.BasicDataProvider
+import live.lingting.minecraft.data.ListenerData
 import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.item.ItemSource
+import live.lingting.minecraft.listener.BasicListener
 import live.lingting.minecraft.loot.BasicNumberProvider
 import live.lingting.minecraft.world.IWorld
+import net.minecraft.core.component.DataComponentType
 import net.minecraft.data.DataProvider
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType
@@ -49,11 +55,6 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
     var commandClasses = listOf<Class<out BasicCommand>>()
         private set
 
-    protected val registerDataValue = WaitValue.of<RegisterData>()
-
-    val registerData: RegisterData
-        get() = registerDataValue.notNull()
-
     protected open fun isWorld(cls: Class<*>): Boolean {
         return isSuper(cls, IWorld::class.java)
     }
@@ -76,11 +77,19 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                 isSuper(cls, BasicNumberProvider::class.java)
     }
 
+    protected open fun isCommand(cls: Class<*>) = isSuper(cls, BasicCommand::class.java)
+
     protected open fun isNumberProvider(cls: Class<*>): Boolean {
         return isSuper(cls, BasicNumberProvider::class.java)
     }
 
-    protected open fun isCommand(cls: Class<*>) = isSuper(cls, BasicCommand::class.java)
+    protected open fun isComponentData(cls: Class<*>): Boolean {
+        return isSuper(cls, BasicComponentData::class.java)
+    }
+
+    protected open fun isListener(cls: Class<*>): Boolean {
+        return isSuper(cls, BasicListener::class.java)
+    }
 
     protected open fun onInitializer() {
         log.debug("[{}] onInitializer", modId)
@@ -96,7 +105,9 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                             isBlockEntity(it) ||
                             isDataProvider(it) ||
                             isCommand(it) ||
-                            isNumberProvider(it)
+                            isNumberProvider(it) ||
+                            isComponentData(it) ||
+                            isListener(it)
                 }
             }, loaders)
         }.sortedBy { it.name.reversed() }
@@ -109,6 +120,7 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
         val blockEntityMap = mutableMapOf<Class<out IBlockEntity>, MutableList<B>>()
         val dataProviderClasses = mutableListOf<Class<out Any>>()
         val commandClasses = mutableListOf<Class<out BasicCommand>>()
+        val listenerClasses = mutableListOf<Class<out BasicListener>>()
 
         classes.forEach { c ->
             if (isBlockEntity(c)) {
@@ -125,12 +137,24 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
                 commandClasses.add(c as Class<out BasicCommand>)
             }
             if (isNumberProvider(c)) {
-                val cls = c as Class<out NumberProvider>
+                val cls = c as Class<NumberProvider>
                 val name = BasicNumberProvider.name(cls)
-                val codec = BasicNumberProvider.codes(cls)
+                val codec = BasicNumberProvider.codec(cls)
                 log.debug("[{}] 注册战利品数据类型: {}", modId, name)
                 val supplier = registerNumberProvider(name, codec)
                 BasicNumberProvider.upsert(cls, supplier)
+            }
+            if (isComponentData(c)) {
+                val cls = c as Class<BasicComponentData>
+                val name = BasicComponentData.name(cls)
+                val codec = BasicComponentData.codec(cls)
+                val streamCodec = BasicComponentData.streamCodec(cls)
+                log.debug("[{}] 注册数据组件类型: {}", modId, name)
+                val supplier = registerComponentData(name, codec, streamCodec)
+                BasicComponentData.upsert(cls, supplier)
+            }
+            if (isListener(c)) {
+                listenerClasses.add(c as Class<out BasicListener>)
             }
         }
 
@@ -171,9 +195,10 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
         registerItems = items
         registerBlocks = blocks
         registerBlockItems = blockItems
-        val data = RegisterData.from(registerItems, registerBlocks)
-        registerDataValue.update(data)
-        App.registerData = data
+        val registerData = RegisterData.from(registerItems, registerBlocks)
+        App.registerData = registerData
+        val listenerData = ListenerData(listenerClasses, registerData)
+        App.listenerData = listenerData
         this.dataProviderClasses = dataProviderClasses
         this.commandClasses = commandClasses
         registerBlockEntityMapping(blockEntityTypeMap)
@@ -188,9 +213,15 @@ abstract class Launch<I : Supplier<Item>, B : Supplier<Block>, BI : Any> {
 
     protected abstract fun registerBlockEntity(map: Map<Class<out IBlockEntity>, List<B>>)
 
-    protected abstract fun registerNumberProvider(
+    protected abstract fun <T : NumberProvider> registerNumberProvider(
         name: String,
-        codec: MapCodec<out NumberProvider>
+        codec: MapCodec<T>
     ): Supplier<LootNumberProviderType>
+
+    abstract fun <T : BasicComponentData> registerComponentData(
+        name: String,
+        codec: Codec<T>,
+        streamCodec: StreamCodec<in RegistryFriendlyByteBuf, T>?
+    ): Supplier<DataComponentType<T>>
 
 }

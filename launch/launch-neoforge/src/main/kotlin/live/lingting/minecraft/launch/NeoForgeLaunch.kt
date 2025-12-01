@@ -1,5 +1,6 @@
 package live.lingting.minecraft.launch
 
+import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import live.lingting.framework.util.ClassUtils.isSuper
 import live.lingting.minecraft.App.modId
@@ -7,11 +8,13 @@ import live.lingting.minecraft.CreativeTabs
 import live.lingting.minecraft.block.BlockSource
 import live.lingting.minecraft.block.IBlockEntity
 import live.lingting.minecraft.component.kt.isSuper
+import live.lingting.minecraft.data.BasicComponentData
 import live.lingting.minecraft.data.BasicFeatureProvider
 import live.lingting.minecraft.item.ItemSource
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
+import live.lingting.minecraft.launch.bus.NeoForgeClickListener
 import live.lingting.minecraft.launch.bus.NeoForgeCommand
-import live.lingting.minecraft.launch.bus.NeoForgeLeftClickListener
+import live.lingting.minecraft.launch.bus.NeoForgePlayerListener
 import live.lingting.minecraft.launch.provider.BlockTagsProvider
 import live.lingting.minecraft.launch.provider.DatapackProvider
 import live.lingting.minecraft.launch.provider.LanguageProvider
@@ -21,8 +24,11 @@ import live.lingting.minecraft.launch.provider.PackMetaProvider
 import live.lingting.minecraft.launch.provider.RecipeProvider
 import live.lingting.minecraft.recipes.BasicRecipeProvider
 import live.lingting.minecraft.world.IWorld
+import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.registries.Registries
 import net.minecraft.data.loot.LootTableSubProvider
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.CreativeModeTabs
@@ -71,6 +77,8 @@ class NeoForgeLaunch(
 
     val numberProvider = DeferredRegister.create(Registries.LOOT_NUMBER_PROVIDER_TYPE, modId)
 
+    val dataComponent = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, modId)
+
     init {
         onInitializer()
 
@@ -91,11 +99,13 @@ class NeoForgeLaunch(
         }
         tabCreate.register(bus)
         numberProvider.register(bus)
+        dataComponent.register(bus)
         bus.addListener(::onTab)
         bus.addListener(::onClientGatherData)
 
         val bus = NeoForge.EVENT_BUS
-        bus.register(NeoForgeLeftClickListener)
+        bus.register(NeoForgeClickListener)
+        bus.register(NeoForgePlayerListener)
         bus.register(NeoForgeCommand(commandClasses))
     }
 
@@ -128,11 +138,27 @@ class NeoForgeLaunch(
         }
     }
 
-    override fun registerNumberProvider(
+    override fun <T : NumberProvider> registerNumberProvider(
         name: String,
-        codec: MapCodec<out NumberProvider>
+        codec: MapCodec<T>
     ): Supplier<LootNumberProviderType> {
         return numberProvider.register(name, Supplier { LootNumberProviderType(codec) })
+    }
+
+    override fun <T : BasicComponentData> registerComponentData(
+        name: String,
+        codec: Codec<T>,
+        streamCodec: StreamCodec<in RegistryFriendlyByteBuf, T>?
+    ): Supplier<DataComponentType<T>> {
+        return dataComponent.register(name, Supplier {
+            val builder = DataComponentType.builder<T>()
+                .cacheEncoding()
+                .persistent(codec)
+            if (streamCodec != null) {
+                builder.networkSynchronized(streamCodec)
+            }
+            builder.build()
+        })
     }
 
     fun onTab(e: BuildCreativeModeTabContentsEvent) {
@@ -191,10 +217,10 @@ class NeoForgeLaunch(
             }
         }
         // 下面这些数据, 客户端和服务端都需要包含
-        LootProvider.register(e, lootClasses, registerData)
-        RecipeProvider.register(e, recipeClasses, registerData)
-        BlockTagsProvider.register(e, registerData)
-        DatapackProvider.register(e, featureProviderClasses, registerData)
+        LootProvider.register(e, lootClasses)
+        RecipeProvider.register(e, recipeClasses)
+        BlockTagsProvider.register(e)
+        DatapackProvider.register(e, featureProviderClasses)
     }
 
 }

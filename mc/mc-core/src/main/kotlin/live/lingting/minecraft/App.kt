@@ -4,6 +4,7 @@ import live.lingting.framework.resource.JarResourceResolver
 import live.lingting.framework.util.ResourceUtils
 import live.lingting.framework.value.WaitValue
 import live.lingting.minecraft.component.util.TomlUtils
+import live.lingting.minecraft.data.ListenerData
 import live.lingting.minecraft.data.RegisterData
 
 /**
@@ -46,6 +47,12 @@ object App {
     var registerData: RegisterData
         get() = registerDataValue.notNull()
         set(value) = registerDataValue.update(value)
+
+    private val listenerDataValue = WaitValue.of<ListenerData>()
+
+    var listenerData: ListenerData
+        get() = listenerDataValue.notNull()
+        set(value) = listenerDataValue.update(value)
 
     fun findItem(id: String?) = registerData.findItem(id)
 

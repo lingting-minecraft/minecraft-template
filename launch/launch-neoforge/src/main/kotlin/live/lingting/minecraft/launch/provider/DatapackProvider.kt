@@ -8,7 +8,6 @@ import live.lingting.minecraft.data.BasicFeatureProvider
 import live.lingting.minecraft.data.BiomeAddFeatureProvider
 import live.lingting.minecraft.data.ConfiguredFeatureProvider
 import live.lingting.minecraft.data.PlacedFeatureProvider
-import live.lingting.minecraft.data.RegisterData
 import net.minecraft.core.HolderSet
 import net.minecraft.core.RegistrySetBuilder
 import net.minecraft.core.registries.Registries
@@ -34,34 +33,31 @@ class DatapackProvider : DatapackBuiltinEntriesProvider {
 
         fun register(
             e: GatherDataEvent,
-            classes: List<Class<out BasicFeatureProvider<*>>>,
-            registerData: RegisterData
+            classes: List<Class<out BasicFeatureProvider<*>>>
         ) {
-            e.addProvider(DatapackProvider(e, classes, registerData))
+            e.addProvider(DatapackProvider(e, classes))
         }
 
     }
 
     constructor(
         e: GatherDataEvent,
-        classes: List<Class<out BasicFeatureProvider<*>>>,
-        registerData: RegisterData
+        classes: List<Class<out BasicFeatureProvider<*>>>
     ) : super(
         e.generator.packOutput,
         e.lookupProvider,
-        Builder(classes, registerData),
+        Builder(classes),
         setOf("minecraft", modId)
     )
 
     class Builder(
-        val classes: List<Class<out BasicFeatureProvider<*>>>,
-        val registerData: RegisterData
+        classes: List<Class<out BasicFeatureProvider<*>>>
     ) : RegistrySetBuilder() {
 
         val instances: List<BasicFeatureProvider<*>>
 
         init {
-            val value = ClassNewValue(classes, listOf(registerData))
+            val value = ClassNewValue(classes, listOf())
             instances = value.create()
             add(Registries.CONFIGURED_FEATURE, ::configured)
             add(Registries.PLACED_FEATURE, ::place)

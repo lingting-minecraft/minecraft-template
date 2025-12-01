@@ -4,5 +4,6 @@
   "melee.weapons": "近战武器",
   "melee.weapons.hover": "这是一把近战武器",
   "melee.weapons.hover.damage": "基础伤害: %d",
-  "melee.weapons.hover.damage.additional": "附加伤害: %d"
+  "melee.weapons.hover.damage.additional": "附加伤害: %d",
+  "melee.energy.hover": "这是一把能量武器"
 }

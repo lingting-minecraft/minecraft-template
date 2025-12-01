@@ -31,8 +31,8 @@ class FortuneLevelNumberProvider(
         val CODEC: MapCodec<FortuneLevelNumberProvider> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 Codec.FLOAT.fieldOf("base").forGetter { it.basic },
-                Codec.FLOAT.optionalFieldOf("step", 1f).forGetter { it.step },
-                Codec.INT.optionalFieldOf("min_level", 0).forGetter { it.minLevel }
+                Codec.FLOAT.fieldOf("step").forGetter { it.step },
+                Codec.INT.fieldOf("min_level").forGetter { it.minLevel }
             ).apply(instance) { base, step, minLevel ->
                 FortuneLevelNumberProvider(base, step, minLevel)
             }

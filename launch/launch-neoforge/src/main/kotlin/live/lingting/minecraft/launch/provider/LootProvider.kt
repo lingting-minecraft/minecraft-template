@@ -2,9 +2,6 @@ package live.lingting.minecraft.launch.provider
 
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.ClassUtils.isSuper
-import live.lingting.minecraft.component.kt.isSuper
-import live.lingting.minecraft.data.BasicDataProvider
-import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.loot.BlockLootProvider
 import net.minecraft.core.HolderLookup
 import net.minecraft.data.loot.BlockLootSubProvider
@@ -30,7 +27,7 @@ class LootProvider(
 
         fun register(
             e: GatherDataEvent,
-            lootClasses: List<Class<out LootTableSubProvider>>, registerData: RegisterData
+            lootClasses: List<Class<out LootTableSubProvider>>
         ) {
             val blockClasses = mutableListOf<Class<out BlockLootProvider>>()
             // todo 自定义的实体类型
@@ -51,9 +48,7 @@ class LootProvider(
             val list: List<SubProviderEntry> = buildList {
                 add(
                     SubProviderEntry({ provider ->
-                        BlockEntryProvider(provider, blockClasses).apply {
-                            this.registerData = registerData
-                        }
+                        BlockEntryProvider(provider, blockClasses)
                     }, LootContextParamSets.BLOCK)
                 )
 
@@ -87,16 +82,9 @@ class LootProvider(
 
         override fun generate(biConsumer: BiConsumer<ResourceKey<LootTable?>?, LootTable.Builder?>) {
             lootClasses.forEach { lootCls ->
-                val also = ClassUtils.newInstance(lootCls, true, listOf(provider))
-                    .also { ltp ->
-                        if (ltp.isSuper(BasicDataProvider::class)) {
-                            val p = ltp as BasicDataProvider
-                            p.registerData = registerData
-                        }
-                    }
-
-                also.generate(biConsumer)
-                also.transfer(this)
+                val p = ClassUtils.newInstance(lootCls, true, listOf(provider))
+                p.generate(biConsumer)
+                p.transfer(this)
             }
 
             superGenerate(biConsumer)

@@ -17,16 +17,16 @@ abstract class BasicNumberProvider : NumberProvider {
     companion object {
 
         @JvmStatic
-        fun name(cls: Class<out NumberProvider>): String =
+        fun <T : NumberProvider> name(cls: Class<T>): String =
             "${cls.simpleName}_${DigestUtils.md5Hex(cls.name)}".lowercase()
 
         @JvmStatic
-        fun codes(cls: Class<out NumberProvider>): MapCodec<out NumberProvider> {
-            return ClassUtils.field(cls, "CODEC")!!.get(null) as MapCodec<out NumberProvider>
+        fun <T : NumberProvider> codec(cls: Class<T>): MapCodec<T> {
+            return ClassUtils.field(cls, "CODEC")!!.get(null) as MapCodec<T>
         }
 
         @JvmStatic
-        fun upsert(cls: Class<out NumberProvider>, supplier: Supplier<LootNumberProviderType>) {
+        fun <T : NumberProvider> upsert(cls: Class<T>, supplier: Supplier<LootNumberProviderType>) {
             val value = ClassUtils.field(cls, "TYPE")!!.get(null) as WaitValue<Supplier<LootNumberProviderType>>
             value.update(supplier)
         }

@@ -1,7 +1,7 @@
 package live.lingting.minecraft.launch.provider
 
+import live.lingting.minecraft.App
 import live.lingting.minecraft.App.modId
-import live.lingting.minecraft.data.RegisterData
 import net.minecraft.core.HolderLookup
 import net.minecraft.world.level.block.Block
 import net.neoforged.neoforge.common.data.BlockTagsProvider
@@ -12,19 +12,18 @@ import net.neoforged.neoforge.data.event.GatherDataEvent
  */
 class BlockTagsProvider(
     e: GatherDataEvent,
-    val registerData: RegisterData
 ) : BlockTagsProvider(e.generator.packOutput, e.lookupProvider, modId, e.existingFileHelper) {
 
     companion object {
 
-        fun register(e: GatherDataEvent, registerData: RegisterData) {
-            e.addProvider(BlockTagsProvider(e, registerData))
+        fun register(e: GatherDataEvent) {
+            e.addProvider(BlockTagsProvider(e))
         }
 
     }
 
     override fun addTags(provider: HolderLookup.Provider) {
-        registerData.blockSource.forEach {
+        App.registerData.blockSource.forEach {
             val tags = it.tags
             if (!tags.isNullOrEmpty()) {
                 for (key in tags) {

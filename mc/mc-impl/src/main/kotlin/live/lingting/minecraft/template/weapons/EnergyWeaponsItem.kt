@@ -2,26 +2,26 @@ package live.lingting.minecraft.template.weapons
 
 import live.lingting.minecraft.data.WeaponsData
 import live.lingting.minecraft.i18n.I18n
-import live.lingting.minecraft.item.IMeleeWeaponsItem
+import live.lingting.minecraft.item.IEnergyWeaponsItem
 import live.lingting.minecraft.item.ItemSource
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 
 /**
- * 近战武器
- * @author lingting 2025/11/29 0:28
+ * 能量武器
+ * @author lingting 2025/11/29 0:27
  */
-class MeleeWeaponsItem : IMeleeWeaponsItem {
+class EnergyWeaponsItem : IEnergyWeaponsItem {
 
     companion object {
 
         @JvmField
-        val ID = ItemSource.id("melee.weapons")
+        val ID = ItemSource.id("energy.weapons")
 
     }
 
-    constructor(p: Properties) : super(MeleeWeaponsItem::class.java, WeaponsData(3.0, 1.5), 12, p)
+    constructor(p: Properties) : super(EnergyWeaponsItem::class.java, WeaponsData(6.0, 1.5), 12, p)
 
     override fun appendHoverText(
         stack: ItemStack,
@@ -29,7 +29,7 @@ class MeleeWeaponsItem : IMeleeWeaponsItem {
         components: MutableList<Component?>,
         flag: TooltipFlag
     ) {
-        components.add(I18n.ITEM.MELEE_WEAPONS_HOVER.translatable())
+        components.add(I18n.ITEM.MELEE_ENERGY_HOVER.translatable())
         val holder = tooltip.registries()
         val basic = getBasicDamage(stack, holder)
         val additional = getAdditionalDamage(stack, basic, holder)

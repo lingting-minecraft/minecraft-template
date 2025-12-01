@@ -1,7 +1,5 @@
 package live.lingting.minecraft.loot
 
-import live.lingting.framework.value.WaitValue
-import live.lingting.minecraft.data.RegisterData
 import live.lingting.minecraft.kt.number
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
@@ -38,12 +36,6 @@ abstract class BlockLootProvider : BlockLootSubProvider, BasicLootProvider {
         featureFlagSet,
         provider
     )
-
-    private val registerDataValue = WaitValue.of<RegisterData>()
-
-    override var registerData: RegisterData
-        get() = registerDataValue.notNull()
-        set(value) = registerDataValue.update(value)
 
     protected val enchantment: HolderLookup.RegistryLookup<Enchantment>
         get() = registries.lookupOrThrow(Registries.ENCHANTMENT)

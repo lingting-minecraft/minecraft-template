@@ -1,6 +1,5 @@
 package live.lingting.minecraft.data
 
-import jakarta.annotation.Resource
 import live.lingting.framework.value.WaitValue
 import live.lingting.minecraft.kt.location
 import net.minecraft.data.worldgen.BootstrapContext
@@ -10,13 +9,6 @@ import net.minecraft.resources.ResourceKey
  * @author lingting 2025/11/23 22:44
  */
 abstract class BasicFeatureProvider<T> : BasicDataProvider {
-
-    private val registerDataValue = WaitValue.of<RegisterData>()
-
-    override var registerData: RegisterData
-        get() = registerDataValue.notNull()
-        @Resource
-        set(value) = registerDataValue.update(value)
 
     private val _context = WaitValue.of<BootstrapContext<T>>()
 

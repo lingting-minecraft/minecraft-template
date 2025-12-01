@@ -1,5 +1,6 @@
 package live.lingting.minecraft.data
 
+import live.lingting.minecraft.App
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 
@@ -8,7 +9,8 @@ import net.minecraft.world.level.block.Block
  */
 interface BasicDataProvider {
 
-    var registerData: RegisterData
+    val registerData: RegisterData
+        get() = App.registerData
 
     val items: List<Item>
         get() = registerData.items

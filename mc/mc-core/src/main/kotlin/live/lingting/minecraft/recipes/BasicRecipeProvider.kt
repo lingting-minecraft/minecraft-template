@@ -1,8 +1,6 @@
 package live.lingting.minecraft.recipes
 
-import live.lingting.framework.value.WaitValue
 import live.lingting.minecraft.data.BasicDataProvider
-import live.lingting.minecraft.data.RegisterData
 import net.minecraft.advancements.CriteriaTriggers
 import net.minecraft.advancements.Criterion
 import net.minecraft.advancements.critereon.InventoryChangeTrigger
@@ -23,12 +21,6 @@ import java.util.Optional
  * @author lingting 2025/11/21 17:55
  */
 abstract class BasicRecipeProvider : BasicDataProvider {
-
-    private val registerDataValue = WaitValue.of<RegisterData>()
-
-    override var registerData: RegisterData
-        get() = registerDataValue.notNull()
-        set(value) = registerDataValue.update(value)
 
     abstract fun buildRecipes(output: RecipeOutput)
 

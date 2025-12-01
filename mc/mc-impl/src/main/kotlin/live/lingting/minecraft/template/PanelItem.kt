@@ -5,7 +5,7 @@ import live.lingting.minecraft.eunums.ClickBlockResult
 import live.lingting.minecraft.i18n.I18n
 import live.lingting.minecraft.item.IItem
 import live.lingting.minecraft.item.ItemSource
-import live.lingting.minecraft.listener.LeftClickListener
+import live.lingting.minecraft.listener.ClickListener
 import live.lingting.minecraft.util.PlayerUtils.isClientSide
 import live.lingting.minecraft.util.UseOnContextUtils.isClientSide
 import live.lingting.minecraft.util.UseOnContextUtils.targetEntity
@@ -21,7 +21,7 @@ import net.minecraft.world.item.context.UseOnContext
 /**
  * @author lingting 2025/11/6 19:34
  */
-class PanelItem : IItem, LeftClickListener {
+class PanelItem : IItem, ClickListener {
 
     companion object {
 
