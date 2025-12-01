@@ -58,7 +58,7 @@ object NeoForgeClickListener {
 
     fun onTrigger(e: PlayerInteractEvent.LeftClickBlock, stack: ItemStack): ClickBlockResult {
         val action = e.action
-        val listeners = App.listenerData.find(ClickListener::class, stack, stack.item)
+        val listeners = App.listenerData.findItem(ClickListener::class, stack)
         return onTrigger(listeners) {
             when (action) {
                 PlayerInteractEvent.LeftClickBlock.Action.START -> it.onLeftClickBlock(e.entity, stack, e.pos)

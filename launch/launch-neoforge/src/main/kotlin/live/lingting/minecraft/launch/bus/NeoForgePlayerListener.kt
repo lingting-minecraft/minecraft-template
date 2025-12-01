@@ -19,11 +19,11 @@ object NeoForgePlayerListener {
         val player = e.entity
         val target = e.target
 
-        val playerListeners = App.listenerData.find(PlayerListener::class, target)
+        val playerListeners = App.listenerData.findPlayer(PlayerListener::class, player)
         var r = onTrigger(playerListeners) { it.onAttackEntity(player, target) }
         if (r == AttackResult.PASS) {
             val stack = player.mainHandItem
-            val clickListeners = App.listenerData.find(ClickListener::class, target)
+            val clickListeners = App.listenerData.findItem(ClickListener::class, stack)
             r = onTrigger(clickListeners) { it.onLeftClickEntity(player, stack, target) }
         }
 

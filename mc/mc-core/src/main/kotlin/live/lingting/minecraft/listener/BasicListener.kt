@@ -3,6 +3,7 @@ package live.lingting.minecraft.listener
 import java.util.function.Function
 
 /**
+ * 如果监听者 是 IWorld 的子类, 那么该监听者仅会在对应 资源 触发的事件中被执行
  * @author lingting 2025/12/1 10:41
  */
 interface BasicListener {
