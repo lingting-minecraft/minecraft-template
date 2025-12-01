@@ -57,4 +57,6 @@ object Vec3iUtils {
         }
     }
 
+    fun Vec3i.string() = "$x $y $z"
+
 }

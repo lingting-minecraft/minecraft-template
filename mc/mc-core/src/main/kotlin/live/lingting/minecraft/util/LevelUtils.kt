@@ -1,5 +1,6 @@
 package live.lingting.minecraft.util
 
+import live.lingting.minecraft.component.kt.isSuper
 import live.lingting.minecraft.util.Vec3iUtils.chunkX
 import live.lingting.minecraft.util.Vec3iUtils.chunkZ
 import net.minecraft.core.BlockPos
@@ -16,6 +17,13 @@ object LevelUtils {
     fun Level.hasChunk(vec: Vec3i) = hasChunk(vec.chunkX, vec.chunkZ)
 
     @JvmStatic
-    fun Level.getBlockState(vec: Vec3i): BlockState = getBlockState(BlockPos(vec))
+    fun Level.getBlockState(vec: Vec3i): BlockState {
+        val pos = if (vec.isSuper(BlockPos::class)) {
+            vec as BlockPos
+        } else {
+            BlockPos(vec)
+        }
+        return getBlockState(pos)
+    }
 
 }
