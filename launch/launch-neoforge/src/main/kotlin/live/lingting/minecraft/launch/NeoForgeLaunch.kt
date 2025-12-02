@@ -13,6 +13,7 @@ import live.lingting.minecraft.data.BasicFeatureProvider
 import live.lingting.minecraft.item.ItemSource
 import live.lingting.minecraft.launch.basic.NBlockEntityHolder
 import live.lingting.minecraft.launch.bus.NeoForgeClickListener
+import live.lingting.minecraft.launch.bus.NeoForgeClientLevelListener
 import live.lingting.minecraft.launch.bus.NeoForgeCommand
 import live.lingting.minecraft.launch.bus.NeoForgePlayerListener
 import live.lingting.minecraft.launch.provider.BlockTagsProvider
@@ -106,6 +107,7 @@ class NeoForgeLaunch(
         val bus = NeoForge.EVENT_BUS
         bus.register(NeoForgeClickListener)
         bus.register(NeoForgePlayerListener)
+        bus.register(NeoForgeClientLevelListener)
         bus.register(NeoForgeCommand(commandClasses))
     }
 

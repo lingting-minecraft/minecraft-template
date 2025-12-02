@@ -65,8 +65,8 @@ class ListenerData(
     /**
      * 如果监听者 是 IWorld 的子类, 那么该监听者仅会在对应 资源 触发的事件中被执行
      */
-    private fun <T : BasicListener> find(klass: KClass<T>, source: Any, vararg args: Any?): List<T> {
-        val isIWorld = source.isSuper(IWorld::class)
+    private fun <T : BasicListener> find(klass: KClass<T>, source: Any?, vararg args: Any?): List<T> {
+        val isIWorld = source != null && source.isSuper(IWorld::class)
         val find = findAll(klass, source, *args)
         return find.filter {
             // 监听者 是 IWorld 的子类
@@ -90,5 +90,7 @@ class ListenerData(
     fun <T : BasicListener> findPlayer(klass: KClass<T>, source: Player, vararg args: Any?): List<T> =
         find(klass, source, source, *args)
 
+    fun <T : BasicListener> findNone(klass: KClass<T>, vararg args: Any?): List<T> =
+        find(klass, null, *args)
 
 }

@@ -3,9 +3,8 @@ package live.lingting.minecraft.item
 import live.lingting.minecraft.data.WeaponsData
 import live.lingting.minecraft.ray.RayHit
 import live.lingting.minecraft.ray.RayHitEntity
+import live.lingting.minecraft.render.LaserRenderer
 import live.lingting.minecraft.util.RayUtils
-import live.lingting.minecraft.util.Vec3Utils.string
-import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -55,20 +54,14 @@ abstract class IEnergyWeaponsItem : IRangedWeapons {
         hits: List<RayHit>
     ) {
         if (level.isClientSide) {
-            val (start, end) = RayUtils.pos(player, data.distance)
-            hits.forEach {
-                player.sendSystemMessage(Component.literal("命中: 空气: ${it.isAir()}; 实体: ${it.isEntity()}; 坐标: ${it.pos.string()}"))
-            }
-            player.sendSystemMessage(Component.literal("==============================="))
+            LaserRenderer.push(player, data, hits)
         } else {
             val map = attackDamage(level, player, stack, data, hits)
             val source = player.lastDamageSource ?: level.damageSources().generic()
-            var hurt = false
             map.forEach { hit, damage ->
                 if (!hit.isEntity() || damage == null) {
                     return@forEach
                 }
-                hurt = true
                 if (damage <= 0.0) {
                     return@forEach
                 }
@@ -78,10 +71,8 @@ abstract class IEnergyWeaponsItem : IRangedWeapons {
                 }
                 target.hurt(source, damage.toFloat())
             }
-            // 有攻击目标则减少耐久
-            if (hurt) {
-                durabilityChange(stack, -1, player)
-            }
+            // 能量释放就减少耐久
+            durabilityChange(stack, -1, player)
             player.cooldowns.addCooldown(stack.item, data.speedTick)
         }
     }
